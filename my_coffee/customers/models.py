@@ -9,7 +9,6 @@ class Order(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, default=1)
     status = models.CharField(max_length=1, choices=STATUSES,
                               default="W")
-    price = models.IntegerField(default=0)
     location = models.CharField(max_length=2, choices=LOCATIONS,
                                 default="IS")
     address = models.TextField()
