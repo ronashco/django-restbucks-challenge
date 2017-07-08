@@ -2,11 +2,6 @@ from django.db import models
 from django.conf import settings
 
 
-class OrderedProduction(models.Model):
-    name = models.CharField(max_length=50)
-    product = models.ManyToManyField("productions.Menu")
-
-
 class Order(models.Model):
     STATUSES = (("W", "waiting"), ("P", "preparation"),
                 ("R", "ready"))
@@ -20,6 +15,6 @@ class Order(models.Model):
     address = models.TextField()
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)
-    ordered_productions = models.ManyToManyField(OrderedProduction)
+    ordered_productions = models.ManyToManyField("productions.Menu")
 
 
