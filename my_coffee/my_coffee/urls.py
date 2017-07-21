@@ -7,4 +7,6 @@ urlpatterns = [
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^api/productions/', include("productions.api.urls",
+                                      namespace="productions-api")),
 ]
