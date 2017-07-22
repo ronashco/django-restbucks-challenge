@@ -1,6 +1,4 @@
 from rest_framework import serializers
-from rest_framework.utils.representation import manager_repr
-
 from ..models import Menu, ProductOption, DetailOption
 
 
@@ -22,11 +20,6 @@ class ProductOptionSerializer(serializers.ModelSerializer):
             'detail_option'
         ]
 
-    # def get_detail_option(self, obj):
-    #     d_qs = DetailOption.objects.filter_by_instance(obj)
-    #     details = DetailOptionSerializer(d_qs, many=True).data
-    #     return details
-
 
 class MenuSerializer(serializers.ModelSerializer):
     options = ProductOptionSerializer(many=True)
@@ -39,7 +32,3 @@ class MenuSerializer(serializers.ModelSerializer):
             'price'
         ]
 
-    # def get_options(self, obj):
-    #     o_qs = ProductOption.objects.filter_by_instance(obj)
-    #     options = ProductOptionSerializer(o_qs, many=True).data
-    #     return options
