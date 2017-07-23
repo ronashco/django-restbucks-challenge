@@ -9,4 +9,6 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/productions/', include("productions.api.urls",
                                       namespace="productions-api")),
+    url(r'^api/customers/', include("customers.api.urls",
+                                    namespace="customers-api")),
 ]
