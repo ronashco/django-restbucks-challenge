@@ -1,0 +1,16 @@
+[run]
+source = core/
+branch = False
+omit =
+    core/*/tests/*
+    core/*/tests.py
+    core/*/migrations/*
+    core/*/fixtures/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
