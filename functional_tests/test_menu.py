@@ -5,7 +5,7 @@ class TestProductList(LiveServerTestCase):
     """
     Make sure our menu works well.
     """
-    def test__contains_primary_data(self):
+    def test_contains_primary_data(self):
         response = self.client.get('/api/products/')
         for p in response.json():
             self.assertEqual(

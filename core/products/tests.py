@@ -13,6 +13,13 @@ class TestProductModel(TestCase):
             items=['skim', 'semi', 'whole']
         )
 
+    def test_creation(self):
+        """Make sure product object created properly."""
+        self.assertIsInstance(
+            self.product, models.Product
+        )
+        self.assertEqual(1, models.Product.objects.count())
+
     def test_create_dates(self):
         """
         Make sure the create_date field sets automatically.
