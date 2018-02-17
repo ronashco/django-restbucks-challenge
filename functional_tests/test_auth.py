@@ -14,19 +14,20 @@ class TestRegistration(APITestCase):
         Users must be enter a valid email address to register.
         """
         data = {}
-        response = self.client.get(self.url, data=data)
+        response = self.client.post(self.url, data=data)
         self.assertEqual(
-            response.json().get('email'), ['This field is required']
+            response.json().get('email'), ['This field is required.']
         )
 
         data.update({'email': 'invalid_email'})
-        response = self.client.get(self.url, data=data)
+        response = self.client.post(self.url, data=data)
 
         self.assertEqual(
-            response.json().get('email'), ['Invalid email']
+            response.json().get('email'), ['Enter a valid email address.']
         )
 
         data.update({'email': self.valid_data['email']})
+        response = self.client.post(self.url, data=data)
         self.assertIsNone(
             response.json().get('email')
         )
@@ -36,25 +37,26 @@ class TestRegistration(APITestCase):
          Users must be enter a valid password contains at least 8 letters.
          """
         data = {}
-        response = self.client.get(self.url, data=data)
+        response = self.client.post(self.url, data=data)
         self.assertEqual(
-            response.json().get('password'), ['This field is required']
+            response.json().get('password'), ['This field is required.']
         )
 
         data.update({'password': '1234567'})
-        response = self.client.get(self.url, data=data)
+        response = self.client.post(self.url, data=data)
 
         self.assertEqual(
-            response.json().get('password'), ['Invalid password']
+            response.json().get('password'), ['Password must be contains at least 8 letters.']
         )
 
         data.update({'password': self.valid_data['password']})
+        response = self.client.post(self.url, data=data)
         self.assertIsNone(
             response.json().get('password')
         )
 
     def test_successful_register(self):
-        response = self.client.get(self.url, data=self.valid_data)
+        response = self.client.post(self.url, data=self.valid_data)
         self.assertEqual(
             {'token'}, set(response.json().keys())
         )
