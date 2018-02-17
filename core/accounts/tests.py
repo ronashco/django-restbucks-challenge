@@ -28,6 +28,9 @@ class TestSignals(TestCase):
 
 
 class TestEmailBackend(TestCase):
+    """
+    Make sure backend can recognize users with their email address.
+    """
     def setUp(self):
         self.backend = EmailBackend()
 
@@ -43,9 +46,23 @@ class TestEmailBackend(TestCase):
         cls.user = user
 
     def test_authenticate(self):
-        """Make sure backend can recognize users with their email address."""
+        """
+        Make sure user returns User object with valid credentials.
+        """
         user = self.backend.authenticate(username=self.user_data['email'],
                                          password=self.user_data['password'])
         self.assertEqual(
             self.user, user
         )
+
+    def test_with_invalid_credentials(self):
+        """
+        Make sure it doesnt accept invalid credentials.
+        """
+        user = self.backend.authenticate(username=self.user_data['email'],
+                                         password='invalid password')
+        self.assertIsNone(user)
+
+        user = self.backend.authenticate(username='invalid_username',
+                                         password='something ...')
+        self.assertIsNone(user)
