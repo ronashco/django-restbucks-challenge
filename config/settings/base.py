@@ -17,7 +17,8 @@ THIRD_PARTY_APPS = [
     'rest_framework'
 ]
 PROJECT_APPS = [
-    'core.products'
+    'core.products',
+    'core.accounts',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
