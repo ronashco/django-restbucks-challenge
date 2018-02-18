@@ -30,7 +30,7 @@ class RegisterSerializer(ModelSerializer):
     @staticmethod
     def validate_password(value):
         if len(value) < 8:
-            raise ValidationError('Password must be contains at least 8 letters.')
+            raise ValidationError('Password must be at least 8 letters.')
         return value
 
     def create(self, validated_data):

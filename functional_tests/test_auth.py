@@ -1,4 +1,7 @@
 from rest_framework.test import APITestCase
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class TestRegistration(APITestCase):
@@ -46,7 +49,7 @@ class TestRegistration(APITestCase):
         response = self.client.post(self.url, data=data)
 
         self.assertEqual(
-            response.json().get('password'), ['Password must be contains at least 8 letters.']
+            response.json().get('password'), ['Password must be at least 8 letters.']
         )
 
         data.update({'password': self.valid_data['password']})
@@ -59,4 +62,34 @@ class TestRegistration(APITestCase):
         response = self.client.post(self.url, data=self.valid_data)
         self.assertEqual(
             {'token'}, set(response.json().keys())
+        )
+
+
+class LoginTest(APITestCase):
+    """
+    Make sure users can get their auth tokens through login api.
+    """
+    def setUp(self):
+        self.url = '/api/accounts/login/'
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_data = {
+            'email': 'foo@email.com',
+            'password': 'Abc123456789'
+        }
+        cls.user = User.objects.create_user(username=cls.user_data['email'],
+                                            email=cls.user_data['email'],
+                                            password=cls.user_data['password'])
+
+    def test_with_invalid_credentials(self):
+        response = self.client.post(self.url, data={'email': 'invalid', 'password': '12345'})
+        self.assertEqual(
+            response.content, b'"Invalid credentials."'
+        )
+
+    def test_with_valid_credentials(self):
+        response = self.client.post(self.url, self.user_data)
+        self.assertEqual(
+            set(response.json().keys()), {'token'}
         )
