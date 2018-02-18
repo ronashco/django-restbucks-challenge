@@ -4,6 +4,9 @@ from . import models
 
 
 class TestProductModel(TestCase):
+    """
+    Make sure product model defined properly
+    """
     @classmethod
     def setUpTestData(cls):
         cls.product = models.Product.objects.create(

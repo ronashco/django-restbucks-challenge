@@ -9,12 +9,20 @@ from . import serializers
 
 
 class Menu(ListAPIView):
+    """
+    Return a list of all existing products.
+    """
     serializer_class = serializers.ProductListSerializer
     queryset = Product.objects.all().order_by('title')
 
 
 @api_view(['POST'])
 def register(request):
+    """
+    Store user in database and return associated token key.
+    :param request:
+    :return:
+    """
     serializer = serializers.RegisterSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -26,11 +34,17 @@ def register(request):
 
 @api_view(['POST'])
 def login(request):
+    """
+    Return user token, if requested data is valid.
+    :param request:
+    :return:
+    """
     user = authenticate(username=request.data.get('email'),
                         password=request.data.get('password'))
     if user:
         try:
             token = Token.objects.get(user=user)
+        # if user doesnt have token, we will create one.
         except Token.DoesNotExist:
             token = Token.objects.create(user=user)
         return Response({'token': token.key}, status=status.HTTP_200_OK)

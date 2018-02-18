@@ -6,12 +6,18 @@ User = get_user_model()
 
 
 class ProductListSerializer(ModelSerializer):
+    """
+    Product model serialization.
+    """
     class Meta:
         model = Product
         fields = ('title', 'price', 'option', 'items')
 
 
 class RegisterSerializer(ModelSerializer):
+    """
+    User model serialization.
+    """
     class Meta:
         model = User
         fields = ('email', 'password')
@@ -35,6 +41,8 @@ class RegisterSerializer(ModelSerializer):
 
     def create(self, validated_data):
         user = self.Meta.model(**validated_data)
+        # We won't store raw passwords,
+        # we use user.set_password to hash passwords.
         user.set_password(validated_data['password'])
         user.save()
         return user

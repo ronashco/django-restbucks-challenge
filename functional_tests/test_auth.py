@@ -83,12 +83,14 @@ class LoginTest(APITestCase):
                                             password=cls.user_data['password'])
 
     def test_with_invalid_credentials(self):
+        # if we send incorrect data, we should see error message.
         response = self.client.post(self.url, data={'email': 'invalid', 'password': '12345'})
         self.assertEqual(
             response.content, b'"Invalid credentials."'
         )
 
     def test_with_valid_credentials(self):
+        # if we send correct data, The token must be in response.
         response = self.client.post(self.url, self.user_data)
         self.assertEqual(
             set(response.json().keys()), {'token'}
