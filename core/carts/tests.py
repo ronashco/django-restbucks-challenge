@@ -2,6 +2,7 @@ from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from core.products.models import Product
 from .models import Cart
 
@@ -110,3 +111,16 @@ class TestCartModel(TestCase):
         self.assertIsNone(
             cart.customization
         )
+
+    def test_unique_fields(self):
+        """Make sure product and user are unique together"""
+        product = Product.objects.create(
+            title='Cake',
+            price=4,
+            option='size',
+            items=['small', 'medium', 'large']
+        )
+
+        Cart.objects.create(product=product, user=self.user, customization='small')
+        with self.assertRaises(ValidationError):
+            Cart.objects.create(product=product, user=self.user, customization='small')

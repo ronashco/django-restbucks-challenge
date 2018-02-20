@@ -13,6 +13,9 @@ class Cart(models.Model):
     create_date = models.DateTimeField(auto_now_add=True, auto_now=False)
     update_date = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ('product', 'user')
+
     def clean(self):
         # we will check following conditions,
         # if they are not true we will raise ValidationError:
