@@ -66,3 +66,12 @@ class TestEmailBackend(TestCase):
         user = self.backend.authenticate(username='invalid_username',
                                          password='something ...')
         self.assertIsNone(user)
+
+
+class AuthTokenCredentialsMixin:
+    """
+    A Mixin class to handle authentication in protected urls.
+    """
+    def login(self, token, header_keyword='Token'):
+        # set authentication headers to identify user.
+        self.client.credentials(HTTP_AUTHORIZATION="%s %s" % (header_keyword, token))

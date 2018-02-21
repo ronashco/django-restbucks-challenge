@@ -1,17 +1,25 @@
 from django.contrib.auth import get_user_model
-from rest_framework.serializers import ModelSerializer, ValidationError
+from rest_framework.serializers import (
+    Serializer, ModelSerializer, ValidationError, CharField
+)
 from core.products.models import Product
+from core.carts.models import CartApiModel
 
 User = get_user_model()
 
 
-class ProductListSerializer(ModelSerializer):
+class BaseProductSerializer(ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['title', 'price', 'option']
+
+
+class ProductListSerializer(BaseProductSerializer):
     """
     Product model serialization.
     """
-    class Meta:
-        model = Product
-        fields = ('title', 'price', 'option', 'items')
+    class Meta(BaseProductSerializer.Meta):
+        fields = BaseProductSerializer.Meta.fields + ['items']
 
 
 class RegisterSerializer(ModelSerializer):
@@ -46,3 +54,34 @@ class RegisterSerializer(ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class ShowCartsSerializer(Serializer):
+    """
+    We want to use the ShowCartsSerializer only for show cart data in api,
+    so we won't to create/update Cart objects using it.
+    """
+
+    class CartProductSerializer(BaseProductSerializer):
+        """
+        This object has been used as a part of ShowCartsSerializer.
+        """
+        selected_item = CharField()
+
+        class Meta(BaseProductSerializer.Meta):
+            fields = BaseProductSerializer.Meta.fields + ['selected_item', 'id']
+            read_only_fields = fields  # all fields are read only
+
+    count = CharField()
+    total_price = CharField()
+    products = CartProductSerializer(many=True)
+
+    class Meta:
+        fields = ('count', 'total_price', 'products')
+        read_only_fields = '__all__'
+
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        pass

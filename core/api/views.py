@@ -1,10 +1,13 @@
 from django.contrib.auth import authenticate
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
 from core.products.models import Product
+from core.carts.utils import user_cart_detail
+from core.carts.models import Cart, CartApiModel
 from . import serializers
 
 
@@ -50,3 +53,16 @@ def login(request):
         return Response({'token': token.key}, status=status.HTTP_200_OK)
     else:
         return Response('Invalid credentials.', status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrdersListView(RetrieveAPIView):
+    """
+    Return a list of user orders.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.ShowCartsSerializer
+
+    def get_object(self):
+        user = self.request.user
+        qs = Cart.objects.select_related('product').filter(user=user).order_by('-create_date')
+        return CartApiModel(*user_cart_detail(qs))

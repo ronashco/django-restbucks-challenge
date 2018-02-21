@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from core.products.models import Product
-from .models import Cart
+from .models import Cart, CartApiModel
 
 User = get_user_model()
 
@@ -124,3 +124,20 @@ class TestCartModel(TestCase):
         Cart.objects.create(product=product, user=self.user, customization='small')
         with self.assertRaises(ValidationError):
             Cart.objects.create(product=product, user=self.user, customization='small')
+
+
+class CartApiModelTest(TestCase):
+    def setUp(self):
+        self.cart_api_model = CartApiModel
+
+    def test_attributes(self):
+        obj = self.cart_api_model(count=1, total_price=2, products=[])
+        self.assertTrue(
+            hasattr(obj, 'count') and obj.count == 1
+        )
+        self.assertTrue(
+            hasattr(obj, 'total_price') and obj.total_price == 2
+        )
+        self.assertTrue(
+            hasattr(obj, 'products') and obj.products == []
+        )

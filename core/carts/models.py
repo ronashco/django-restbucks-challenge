@@ -43,3 +43,13 @@ class Cart(models.Model):
     def save(self, **kwargs):
         self.full_clean()
         super(Cart, self).save(**kwargs)
+
+
+class CartApiModel:
+    """
+    This class helps cart model serialization
+    """
+    def __init__(self, count, total_price, products):
+        self.count = count
+        self.total_price = total_price
+        self.products = products

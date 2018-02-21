@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from ..serializers import ProductListSerializer, RegisterSerializer
+from ..serializers import (
+    ProductListSerializer, RegisterSerializer, ShowCartsSerializer
+)
 from core.products.models import Product
 
 User = get_user_model()
@@ -101,3 +103,16 @@ class RegisterSerializerTest(TestCase):
             self.assertNotEqual(
                 data['password'], serializer.instance.password
             )
+
+
+class ShowCartsSerializerTest(TestCase):
+    def setUp(self):
+        self.serializer_class = ShowCartsSerializer
+
+    def test_fields(self):
+        self.assertEqual({'count', 'total_price', 'products'},
+                         set(self.serializer_class().fields.keys()))
+
+    def test_product_fields(self):
+        self.assertEqual({'title', 'price', 'option', 'selected_item', 'id'},
+                         set(self.serializer_class.CartProductSerializer().fields.keys()))

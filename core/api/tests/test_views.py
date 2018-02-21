@@ -1,7 +1,9 @@
+from unittest import skip
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
+from core.accounts.tests import AuthTokenCredentialsMixin
 from .. import views
 
 User = get_user_model()
@@ -128,3 +130,54 @@ class LoginTest(APITestCase):
         with self.assertNumQueries(3):
             self.client.post(self.url, data={'email': self.user_data['email'],
                                              'password': self.user_data['password']})
+
+
+class TestCartListView(APITestCase, AuthTokenCredentialsMixin):
+    """
+    Make sure core.api.views.CartListView works well.
+    """
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            username='m@email.com',
+            email='m@email.com',
+            password='Abc123456789',
+        )
+
+    def setUp(self):
+        self.url = reverse('api:cart-list')
+
+    def test_url(self):
+        """Make sure url binds to correct view."""
+        self.assertEqual(
+            self.client.get(self.url).resolver_match.func.__name__,
+            views.OrdersListView.as_view().__name__
+        )
+
+    def test_authentication(self):
+        """Make sure denies requests with no authentication."""
+        response = self.client.post(self.url)  # send request without credentials.‌
+        self.assertEqual(
+            response.status_code, 401
+        )
+
+    def test_response(self):
+        self.login(self.user.auth_token.key)
+        response = self.client.get(self.url, Authorization="Token %s" % self.user.auth_token.key)
+        self.assertEqual(
+            response.status_code, 200
+        )
+
+        self.assertEqual(
+            response['Content-type'], 'application/json'
+        )
+
+    @skip
+    def test_database_queries(self):
+        """
+        Make sure view executes 2 database queries,
+        the first one for user authentication and the second one for fetch cart items.
+        """
+        self.login(self.user.auth_token.key)
+        with self.assertNumQueries(2):
+            self.client.get(self.url)
