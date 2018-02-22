@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from rest_framework.serializers import ValidationError
 from ..serializers import (
-    ProductListSerializer, RegisterSerializer, ShowCartsSerializer
+    ProductListSerializer, RegisterSerializer, ShowCartsSerializer, CartSerializer
 )
 from core.products.models import Product
+from core.carts.models import Cart
 
 User = get_user_model()
 
@@ -116,3 +118,47 @@ class ShowCartsSerializerTest(TestCase):
     def test_product_fields(self):
         self.assertEqual({'title', 'price', 'option', 'selected_item', 'id'},
                          set(self.serializer_class.CartProductSerializer().fields.keys()))
+
+
+class CartSerializerTest(TestCase):
+    """
+    Test core.api.serializers.CartSerializer
+    """
+    fixtures = ['products']
+
+    def setUp(self):
+        self.serializer_class = CartSerializer
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            username='m@email.com',
+            email='m@email.com',
+            password='Abc123456789',
+        )
+
+    def test_fields(self):
+        self.assertEqual(
+            {'product', 'user', 'customization'}, set(self.serializer_class().fields)
+        )
+
+    def test_validation(self):
+        """Make sure serializer applies model level validations."""
+        product = Product.objects.get(title='Tea')
+        # The product does not support customization.
+        s = self.serializer_class(data={'product': product.id, 'user': self.user.id,
+                                        'customization': 'sth ...'})
+        with self.assertRaises(ValidationError):
+            s.is_valid(raise_exception=True)
+
+    def test_create(self):
+        """Make sure serializer has ability to create Order object."""
+        product = Product.objects.first()
+        s = self.serializer_class(data={'product': product.id,
+                                        'user': self.user.id,
+                                        'customization': product.items[0]})
+
+        s.is_valid()
+
+        self.assertIsInstance(s.save(), Cart)
+        self.assertEqual(1, Cart.objects.count())

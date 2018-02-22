@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.serializers import (
     Serializer, ModelSerializer, ValidationError, CharField
 )
 from core.products.models import Product
-from core.carts.models import CartApiModel
+from core.carts.models import Cart
 
 User = get_user_model()
 
@@ -85,3 +86,21 @@ class ShowCartsSerializer(Serializer):
 
     def create(self, validated_data):
         pass
+
+
+class CartSerializer(ModelSerializer):
+    """
+    core.carts.models.Cart model serialization.
+    """
+    class Meta:
+        model = Cart
+        fields = ('product', 'user', 'customization')
+
+    def validate(self, attrs):
+        cart = self.Meta.model(**attrs)
+        # Apply custom model's level validations.
+        try:
+            cart.clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+        return attrs
