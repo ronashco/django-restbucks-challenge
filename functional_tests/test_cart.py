@@ -1,37 +1,49 @@
-from rest_framework.test import APILiveServerTestCase, APIClient
-client = APIClient()
+from rest_framework.test import APILiveServerTestCase
+from core.accounts.tests import AuthTokenCredentialsMixin
+from .utils import create_user
 
 
-# a helper that adds product to cart.
-def add(**data):
-    return client.post('/api/cart/', data=data)
-
-
-# a helper that removes product from cart.
-def remove(product_id):
-    return client.delete('/api/cart/', data={'product': product_id})
-
-
-class CartOperationsTest(APILiveServerTestCase):
+class BaseCartFunctionalTest(APILiveServerTestCase):
     """
-    Make sure users can add products to their cart, and also remove from it.
+    A helper class to work with cart api.
     """
 
     fixtures = ['products']
 
+    def setUp(self):
+        self.user = create_user()
+        self.url = '/api/cart/'
+
+    def add(self, **data):
+        return self.client.post(self.url, data=data)
+
+    def remove(self, product_id):
+        return self.client.delete(self.url, data={'product': product_id})
+
+
+class CartOperationsTest(BaseCartFunctionalTest, AuthTokenCredentialsMixin):
+    """
+    Make sure users can add products to their cart, and also remove from it.
+    """
+
     def test_add(self):
-        response = add(product_id=1, option='skim')
-        self.assertEqual(response.json(), {'message': 'Product added to cart.',
-                                           'cart_count': 1})
+        self.login(token=self.user.auth_token.key)
+
+        response = self.add(product=1, customization='skim')
+        self.assertEqual(response.content, b'')
 
     def test_remove(self):
-        response = add(product_id=1, option='semi')
+        self.login(token=self.user.auth_token.key)
+
+        self.add(product=4)
+
+        response = self.remove(4)
         self.assertEqual(
-            response.json(), {'message': 'Product removed.', 'cart_count': 0}
+            response.content, b''
         )
 
 
-class CartListTest(APILiveServerTestCase):
+class CartListTest(BaseCartFunctionalTest, AuthTokenCredentialsMixin):
     """
     Make sure users are able to view their cart list.
     the result must be something like the following object:
@@ -56,10 +68,6 @@ class CartListTest(APILiveServerTestCase):
 
     }
     """
-    fixtures = ['products']
-
-    def setUp(self):
-        self.url = '/api/cart/'
 
     def _prepare_data(self):
         import random
@@ -71,24 +79,35 @@ class CartListTest(APILiveServerTestCase):
         result = []
         for i in range(count):
             product = products[i]
-            kwargs = {'product_id': product['id']}
-            product_dict = {'title': product['title'], 'price': product['price']}
+            kwargs = {'product': product['id']}
+            product_dict = {'title': product['title'], 'price': product['price'],
+                            'id': product['id']}
             if product['option'] is not None:
                 # select a random option
                 item = random.choice(product['items'])
-                kwargs.update({'option': item})
+                kwargs.update({'customization': item})
                 product_dict.update({'option': product['option'], 'selected_item': item})
-            add(**kwargs)
+            self.add(**kwargs)
             total_price += product['price']
             result.append(product_dict)
 
         return total_price, count, result
 
     def test_list(self):
+        self.login(token=self.user.auth_token.key)
+
         total_price, count, products = self._prepare_data()
 
-        response = self.client.get(self.url)
+        json = self.client.get(self.url).json()
 
-        self.assertEqual(response.json(), {'count': count,
-                                           'total_price': total_price,
-                                           'products': products})
+        self.assertEqual(
+            int(json.get('total_price')), total_price
+        )
+        self.assertEqual(
+            int(json.get('count')), count
+        )
+
+        for p in products:
+            self.assertIn(
+                p, json['products']
+            )

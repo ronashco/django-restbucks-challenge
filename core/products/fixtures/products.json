@@ -17,7 +17,7 @@
     "fields": {
       "title":"Cappuccino",
       "price":6,
-      "option":"Size‌",
+      "option":"Size",
       "items":["small", "medium", "large"],
       "create_date": "2018-02-12T13:20:30+03:00",
       "update_date": "2018-02-12T13:20:30+03:00"

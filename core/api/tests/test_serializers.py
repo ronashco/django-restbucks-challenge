@@ -20,7 +20,7 @@ class TestProductListSerializer(TestCase):
         """Make sure serializer data contains primary product's columns"""
         instance = self.serializer_class(instance=Product.objects.first())
         self.assertEqual(
-            {'title', 'price', 'option', 'items'}, set(instance.data.keys())
+            {'title', 'price', 'option', 'items', 'id'}, set(instance.data.keys())
         )
 
     def test_items(self):
@@ -35,7 +35,8 @@ class TestProductListSerializer(TestCase):
 
         products = Product.objects.all()
 
-        result = [OrderedDict({'title': p.title, 'price': p.price, 'option': p.option, 'items': p.items})
+        result = [OrderedDict({'title': p.title, 'price': p.price,
+                               'option': p.option, 'items': p.items, 'id': p.id})
                   for p in products]
         self.assertEqual(
             self.serializer_class(products, many=True).data, result

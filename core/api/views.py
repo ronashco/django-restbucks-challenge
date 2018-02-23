@@ -1,5 +1,9 @@
 from django.contrib.auth import authenticate
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from django.shortcuts import get_object_or_404
+from django.http.request import QueryDict
+from rest_framework.generics import (
+    ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView
+)
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -55,14 +59,54 @@ def login(request):
         return Response('Invalid credentials.', status=status.HTTP_400_BAD_REQUEST)
 
 
-class OrdersListView(RetrieveAPIView):
+class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
     """
-    Return a list of user orders.
+    get:
+    Return user cart.
+
+    post:
+    Add item to the user cart.
+
+    delete:
+    Remove item from cart.
     """
     permission_classes = (IsAuthenticated,)
-    serializer_class = serializers.ShowCartsSerializer
+
+    def get_serializer_class(self):
+        # We use core.api.serializers.ShowCartsSerializer to retrieve data,
+        # for any other purpose (create/delete/...) we use core.api.serializers.CartSerializer.
+        if self.request.method == 'GET':
+            return serializers.ShowCartsSerializer
+        return serializers.CartSerializer
 
     def get_object(self):
-        user = self.request.user
-        qs = Cart.objects.select_related('product').filter(user=user).order_by('-create_date')
-        return CartApiModel(*user_cart_detail(qs))
+        if self.request.method == 'GET':
+            # We use core.carts.models.CartApiModel as a model for core.api.serializers.CartSerializer to
+            # retrieve cart data
+            user = self.request.user
+            qs = Cart.objects.select_related('product').filter(user=user).order_by('-create_date')
+            return CartApiModel(*user_cart_detail(qs))
+        else:
+            # for any other purpose we use core.carts.models.Cart (primary cart model)
+            return get_object_or_404(Cart, product_id=self.request.data.get('product'),
+                                     user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        if isinstance(request.data, QueryDict):
+            user = request.user
+
+            # In some cases like get requests or requests without data,
+            # request.data will be dict instance then following code
+            # causes exception. We must make sure request.data is instance of QueryDict
+
+            request.data._mutable = True
+            request.data.update({'user': user.id})
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(status=status.HTTP_201_CREATED, headers=headers)

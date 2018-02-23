@@ -37,7 +37,7 @@ class Cart(models.Model):
         elif self.customization is not None and self.customization not in self.product.items:
             raise ValidationError(
                 {"customization": "Invalid item %s, choices are %s" %
-                                  (self.customization, str(self.product.items))}
+                                  (self.customization, ",".join(self.product.items))}
             )
 
     def save(self, **kwargs):
@@ -47,7 +47,8 @@ class Cart(models.Model):
 
 class CartApiModel:
     """
-    This class helps cart model serialization
+    This class helps cart model serialization,
+    It has been used only for retrieve data.
     """
     def __init__(self, count, total_price, products):
         self.count = count

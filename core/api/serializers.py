@@ -20,7 +20,7 @@ class ProductListSerializer(BaseProductSerializer):
     Product model serialization.
     """
     class Meta(BaseProductSerializer.Meta):
-        fields = BaseProductSerializer.Meta.fields + ['items']
+        fields = BaseProductSerializer.Meta.fields + ['items', 'id']
 
 
 class RegisterSerializer(ModelSerializer):
@@ -50,7 +50,7 @@ class RegisterSerializer(ModelSerializer):
 
     def create(self, validated_data):
         user = self.Meta.model(**validated_data)
-        # We won't store raw passwords,
+        # We won't to store raw passwords,
         # we use user.set_password to hash passwords.
         user.set_password(validated_data['password'])
         user.save()

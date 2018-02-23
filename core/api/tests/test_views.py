@@ -3,8 +3,11 @@ from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
+from core.carts.models import Cart
 from core.accounts.tests import AuthTokenCredentialsMixin
+from core.products.models import Product
 from .. import views
+
 
 User = get_user_model()
 
@@ -145,13 +148,13 @@ class TestCartListView(APITestCase, AuthTokenCredentialsMixin):
         )
 
     def setUp(self):
-        self.url = reverse('api:cart-list')
+        self.url = reverse('api:cart')
 
     def test_url(self):
         """Make sure url binds to correct view."""
         self.assertEqual(
             self.client.get(self.url).resolver_match.func.__name__,
-            views.OrdersListView.as_view().__name__
+            views.CartView.as_view().__name__
         )
 
     def test_authentication(self):
@@ -172,7 +175,6 @@ class TestCartListView(APITestCase, AuthTokenCredentialsMixin):
             response['Content-type'], 'application/json'
         )
 
-    @skip
     def test_database_queries(self):
         """
         Make sure view executes 2 database queries,
@@ -181,3 +183,128 @@ class TestCartListView(APITestCase, AuthTokenCredentialsMixin):
         self.login(self.user.auth_token.key)
         with self.assertNumQueries(2):
             self.client.get(self.url)
+
+
+class BaseCartTest(APITestCase, AuthTokenCredentialsMixin):
+    fixtures = ['products']
+
+    def setUp(self):
+        self.url = reverse('api:cart')
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            username='m@email.com',
+            email='m@email.com',
+            password='Abc123456789',
+        )
+
+        cls.product = Product.objects.first()
+
+
+class CartTest(BaseCartTest):
+    """
+    Make sure core.api.views.Cart works well.
+    """
+
+    def test_url(self):
+        self.login(self.user.auth_token.key)
+        post_response = self.client.post(self.url)
+        self.assertEqual(post_response.resolver_match.func.__name__,
+                         views.CartView.as_view().__name__)
+
+        delete_response = self.client.delete(self.url)
+        self.assertEqual(delete_response.resolver_match.func.__name__,
+                         views.CartView.as_view().__name__)
+
+    def test_authentication_is_required(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_add_with_invalid_data(self):
+        self.login(token=self.user.auth_token.key)
+
+        # request with invalid product data
+        response = self.client.post(self.url, data={'product': 1234, 'customization': 'invalid option'})
+        self.assertEqual(response.status_code, 400)
+
+        # request with no data
+        self.assertEqual(
+            self.client.post(self.url).status_code, 400
+        )
+
+    def test_add_to_cart(self):
+        self.login(token=self.user.auth_token.key)
+
+        response = self.client.post(self.url, data={'product': self.product.id,
+                                                    'customization': self.product.items[0]})
+
+        self.assertEqual(
+            response.status_code, 201
+        )
+        self.assertEqual(
+            1, Cart.objects.count()
+        )
+
+    def test_remove_from_cart(self):
+        self.login(token=self.user.auth_token.key)
+
+        self.client.post(self.url, data={'product': self.product.id,
+                                         'customization': self.product.items[0]})
+
+        response = self.client.delete(self.url, data={'product': self.product.id})
+        self.assertEqual(
+            response.status_code, 204
+        )
+
+        self.assertEqual(0, Cart.objects.count())
+
+
+class CartViewDatabaseQueriesTest(BaseCartTest):
+    """
+    Make sure database queries are in the control.
+    In every protected url (urls that need user authentication) we need
+    a database query to user authentication.
+    """
+    def test_with_unauthorized_users(self):
+        with self.assertNumQueries(0):
+            self.client.post(self.url)
+
+    @skip
+    def test_with_invalid_product_data(self):
+        data = {'product': 123456, 'customization': 'sth'}
+        with self.assertNumQueries(2):
+            # We need to recognize user and validate product,
+            # so it should finish with 2 queries.
+            self.login(token=self.user.auth_token.key)
+
+            self.client.post(self.url, data=data)
+
+    @skip
+    def test_remove(self):
+        data = {'product': self.product.id}
+        Cart.objects.create(product=self.product,
+                            user=self.user,
+                            customization=self.product.items[0])
+
+        with self.assertNumQueries(3):
+            # It should done with 3 queries:
+            # 1 - user authentication
+            # 2 - find
+            # 3 - delete cart object
+            self.login(token=self.user.auth_token.key)
+            self.client.delete(self.url, data=data)
+
+    @skip
+    def test_with_valid_product_data(self):
+        data = {
+            'product': self.product.id,
+            'customization': self.product.items[0]
+        }
+        with self.assertNumQueries(3):
+            # It should done with 3 queries:
+            # 1 - user authentication
+            # 2 - product validation
+            # 3 - store cart object
+            self.login(token=self.user.auth_token.key)
+            self.client.post(self.url, data=data)
