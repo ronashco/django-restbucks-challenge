@@ -20,6 +20,7 @@ THIRD_PARTY_APPS = [
 PROJECT_APPS = [
     'core.products',
     'core.accounts',
+    'core.orders',
     'core.carts',
 ]
 
