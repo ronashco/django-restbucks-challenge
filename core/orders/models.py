@@ -54,8 +54,7 @@ class OrderProduct(models.Model):
     product = models.ForeignKey(Product)
     order = models.ForeignKey(Order, related_query_name='products', related_name='products')
     customization = models.CharField(max_length=250, blank=True, null=True)
-    unit_price = models.IntegerField()
-    count = models.IntegerField(default=1)
+    price = models.IntegerField()
 
     def clean(self):
         if self.product.option is None and self.customization is not None:

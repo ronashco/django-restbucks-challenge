@@ -127,7 +127,7 @@ class TestOrderProductModel(BaseOrderTest):
         self.order.products.create(
             product=self.product,
             customization=self.product.items[0],
-            unit_price=self.product.price,
+            price=self.product.price,
         )
         self.assertIsInstance(
             self.order.products.first(), OrderProduct
@@ -137,7 +137,7 @@ class TestOrderProductModel(BaseOrderTest):
     def test_save_method_runs_validations(self):
         """Make sure OrderProduct.save calls OrderProduct.clean before save object"""
         obj = OrderProduct(order=self.order, product=self.product,
-                           customization='Oops', unit_price=self.product.price,
+                           customization='Oops', price=self.product.price,
                            )
         with self.assertRaises(ValidationError):
             obj.save()
@@ -149,12 +149,12 @@ class TestOrderProductModel(BaseOrderTest):
         with self.assertRaises(ValidationError):
             self.order.products.create(
                 product=self.product,
-                unit_price=self.product.price
+                price=self.product.price
             )
 
             self.order.products.create(
                 product=self.product,
-                unit_price=self.product.price,
+                price=self.product.price,
                 customization='invalid.'
             )
 
@@ -162,22 +162,9 @@ class TestOrderProductModel(BaseOrderTest):
         with self.assertRaises(ValidationError):
             self.order.products.create(
                 product=product,
-                unit_price=product.price,
+                price=product.price,
                 customization='invalid.'
             )
-
-    def test_count_default_value(self):
-        """
-        Make sure object has one count by default.
-        """
-        order_product = self.order.products.create(
-            product=self.product,
-            customization=self.product.items[0],
-            unit_price=self.product.price,
-        )
-        self.assertEqual(
-            order_product.count, 1
-        )
 
     def test_uniqueness(self):
         """
@@ -186,13 +173,13 @@ class TestOrderProductModel(BaseOrderTest):
         self.order.products.create(
             product=self.product,
             customization=self.product.items[0],
-            unit_price=self.product.price,
+            price=self.product.price,
         )
         with self.assertRaises(IntegrityError):
             self.order.products.create(
                 product=self.product,
                 customization=self.product.items[0],
-                unit_price=self.product.price,
+                price=self.product.price,
             )
 
 
