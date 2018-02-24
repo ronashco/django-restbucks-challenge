@@ -5,7 +5,7 @@
     "fields": {
       "title":"Latte",
       "price":5,
-      "option":"Milk‌",
+      "option":"Milk",
       "items":["skim", "semi", "whole"],
       "create_date": "2018-02-12T13:20:30+03:00",
       "update_date": "2018-02-12T13:20:30+03:00"

@@ -1,9 +1,10 @@
+from datetime import datetime
 from rest_framework.test import APILiveServerTestCase
 from core.accounts.tests import AuthTokenCredentialsMixin
 from .utils import create_user
 
 
-class BaseCartFunctionalTest(APILiveServerTestCase):
+class BaseOrderFunctionalTest(APILiveServerTestCase):
     """
     A helper class to work with cart api.
     """
@@ -14,14 +15,14 @@ class BaseCartFunctionalTest(APILiveServerTestCase):
         self.user = create_user()
         self.url = '/api/cart/'
 
-    def add(self, **data):
+    def add_to_card(self, **data):
         return self.client.post(self.url, data=data)
 
-    def remove(self, product_id):
+    def remove_from_cart(self, product_id):
         return self.client.delete(self.url, data={'product': product_id})
 
 
-class CartOperationsTest(BaseCartFunctionalTest, AuthTokenCredentialsMixin):
+class CartOperationsTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
     """
     Make sure users can add products to their cart, and also remove from it.
     """
@@ -29,21 +30,21 @@ class CartOperationsTest(BaseCartFunctionalTest, AuthTokenCredentialsMixin):
     def test_add(self):
         self.login(token=self.user.auth_token.key)
 
-        response = self.add(product=1, customization='skim')
+        response = self.add_to_card(product=1, customization='skim')
         self.assertEqual(response.content, b'')
 
     def test_remove(self):
         self.login(token=self.user.auth_token.key)
 
-        self.add(product=4)
+        self.add_to_card(product=4)
 
-        response = self.remove(4)
+        response = self.remove_from_cart(4)
         self.assertEqual(
             response.content, b''
         )
 
 
-class CartListTest(BaseCartFunctionalTest, AuthTokenCredentialsMixin):
+class CartListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
     """
     Make sure users are able to view their cart list.
     the result must be something like the following object:
@@ -87,7 +88,7 @@ class CartListTest(BaseCartFunctionalTest, AuthTokenCredentialsMixin):
                 item = random.choice(product['items'])
                 kwargs.update({'customization': item})
                 product_dict.update({'option': product['option'], 'selected_item': item})
-            self.add(**kwargs)
+            self.add_to_card(**kwargs)
             total_price += product['price']
             result.append(product_dict)
 
@@ -106,6 +107,80 @@ class CartListTest(BaseCartFunctionalTest, AuthTokenCredentialsMixin):
         self.assertEqual(
             int(json.get('count')), count
         )
+
+        for p in products:
+            self.assertIn(
+                p, json['products']
+            )
+
+
+class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
+    def test_fetch_orders_list(self):
+        """
+        Users must get a list of products in /api/orders/ url.
+        The response is something like:
+        [
+            {
+                id:‌‌ X1,
+                total_price: X,
+                status: X,
+                url: our_domain/api/orders/X1,
+            },
+            {
+                id:‌‌ X2,
+                total_price: X,
+                status: X,
+                url: our_domain/api/orders/X2,
+            },
+            ...
+        ]
+        """
+        self.login(token=self.user.auth_token.key)
+
+        self.add_to_card(product=1, customization='skim')
+        self.add_to_card(product=2, customization='medium')
+
+        self.client.post('/api/orders/')  # submit orders.
+
+        response = self.client.get('/api/orders/')
+        json = response.json()[0]
+
+        self.assertIn('id', json.keys())
+        self.assertEqual(json['total_price'], 11)
+        self.assertEqual(json['status'], 'Waiting')
+        self.assertEqual(
+            json['url'], response.wsgi_request.build_absolute_uri('/api/orders/1/')
+        )
+
+    def test_fetch_order_item(self):
+        self.login(token=self.user.auth_token.key)
+
+        self.add_to_card(product=1, customization='skim')
+        self.add_to_card(product=2, customization='medium')
+
+        self.client.post('/api/orders/', data={'location': 'a'})
+
+        json = self.client.get('/api/orders/1/')
+
+        self.assertEquals(
+            json['total_price'], 11
+        )
+        self.assertEquals(
+            json['status'], 'Waiting'
+        )
+
+        self.assertEquals(
+            json['location'], 'Away'
+        )
+
+        self.assertEquals(
+            json['date'], str(datetime.now().date())
+        )
+
+        products = [
+            {'title': 'Latte', 'price': 5, 'option': 'Milk', 'item': 'skim', 'id': 1},
+            {'title': 'Cappuccino', 'price': 6, 'option': 'Size', 'item': 'skim', 'id': 2},
+        ]
 
         for p in products:
             self.assertIn(
