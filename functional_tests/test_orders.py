@@ -1,3 +1,4 @@
+from unittest import skip
 from datetime import datetime
 from rest_framework.test import APILiveServerTestCase
 from core.accounts.tests import AuthTokenCredentialsMixin
@@ -13,7 +14,7 @@ class BaseOrderFunctionalTest(APILiveServerTestCase):
 
     def setUp(self):
         self.user = create_user()
-        self.url = '/api/cart/'
+        self.url = '/api/orders/cart/'
 
     def add_to_card(self, **data):
         return self.client.post(self.url, data=data)
@@ -114,6 +115,7 @@ class CartListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
             )
 
 
+@skip
 class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
     def test_fetch_orders_list(self):
         """

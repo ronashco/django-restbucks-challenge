@@ -5,7 +5,7 @@ from ..serializers import (
     ProductListSerializer, RegisterSerializer, ShowCartsSerializer, CartSerializer
 )
 from core.products.models import Product
-from core.carts.models import Cart
+from core.orders.models import Cart
 
 User = get_user_model()
 

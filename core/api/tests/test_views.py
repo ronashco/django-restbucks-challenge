@@ -3,7 +3,7 @@ from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
-from core.carts.models import Cart
+from core.orders.models import Cart
 from core.accounts.tests import AuthTokenCredentialsMixin
 from core.products.models import Product
 from .. import views

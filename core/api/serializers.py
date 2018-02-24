@@ -4,7 +4,7 @@ from rest_framework.serializers import (
     Serializer, ModelSerializer, ValidationError, CharField
 )
 from core.products.models import Product
-from core.carts.models import Cart
+from core.orders.models import Cart
 
 User = get_user_model()
 

@@ -9,5 +9,5 @@ urlpatterns = [
     url(r'^products/$', views.Menu.as_view(), name='menu'),
     url(r'^accounts/register/$', views.register, name='register'),
     url(r'^accounts/login/$', views.login, name='login'),
-    url(r'^cart/$', views.CartView.as_view(), name='cart'),
+    url(r'^orders/cart/$', views.CartView.as_view(), name='cart'),
 ]

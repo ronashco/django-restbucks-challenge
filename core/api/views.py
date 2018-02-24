@@ -10,8 +10,8 @@ from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from core.products.models import Product
-from core.carts.utils import user_cart_detail
-from core.carts.models import Cart, CartApiModel
+from core.orders.utils import user_cart_detail
+from core.orders.models import Cart, CartApiModel
 from . import serializers
 
 
