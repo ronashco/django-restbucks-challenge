@@ -92,21 +92,8 @@ class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
                                      user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        if isinstance(request.data, QueryDict):
-            user = request.user
-
-            # In some cases like get requests or requests without data,
-            # request.data will be dict instance then following code
-            # causes exception. We must make sure request.data is instance of QueryDict
-
-            request.data._mutable = True
-            request.data.update({'user': user.id})
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         self.perform_create(serializer)
-
         headers = self.get_success_headers(serializer.data)
-
         return Response(status=status.HTTP_201_CREATED, headers=headers)

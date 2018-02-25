@@ -1,11 +1,13 @@
+from collections import OrderedDict
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.shortcuts import reverse
 from rest_framework.serializers import ValidationError
-from ..serializers import (
-    ProductListSerializer, RegisterSerializer, ShowCartsSerializer, CartSerializer
-)
+from rest_framework.test import APITestCase
 from core.products.models import Product
 from core.orders.models import Cart
+from core.accounts.tests import AuthTokenCredentialsMixin
+from .. import serializers
 
 User = get_user_model()
 
@@ -14,7 +16,7 @@ class TestProductListSerializer(TestCase):
     fixtures = ['products']
 
     def setUp(self):
-        self.serializer_class = ProductListSerializer
+        self.serializer_class = serializers.ProductListSerializer
 
     def test_fields(self):
         """Make sure serializer data contains primary product's columns"""
@@ -31,7 +33,6 @@ class TestProductListSerializer(TestCase):
         )
 
     def test_collection(self):
-        from collections import OrderedDict
 
         products = Product.objects.all()
 
@@ -50,7 +51,7 @@ class RegisterSerializerTest(TestCase):
             cls.user = User.objects.create_user(username='foo@email.com',
                                                 email='foo@email.com',
                                                 password='Aa12456789')
-            cls.serializer = RegisterSerializer(instance=cls.user)
+            cls.serializer = serializers.RegisterSerializer(instance=cls.user)
 
         def test_fields(self):
             """
@@ -64,20 +65,20 @@ class RegisterSerializerTest(TestCase):
             """
              Make sure the email validator checks for email's uniqueness/pattern.
             """
-            invalid_serializer = RegisterSerializer(data={'email': 'foo@email.com',
-                                                          'password': 'Abc12345678'})
+            invalid_serializer = serializers.RegisterSerializer(data={'email': 'foo@email.com',
+                                                                      'password': 'Abc12345678'})
             self.assertFalse(
                 invalid_serializer.is_valid()
             )
 
-            invalid_serializer = RegisterSerializer(data={'password': 'Abc12345678'})
+            invalid_serializer = serializers.RegisterSerializer(data={'password': 'Abc12345678'})
             self.assertFalse(invalid_serializer.is_valid())
 
-            invalid_serializer = RegisterSerializer(data={'email': 'valid@email.com'})
+            invalid_serializer = serializers.RegisterSerializer(data={'email': 'valid@email.com'})
             self.assertFalse(invalid_serializer.is_valid())
 
-            valid_serializer = RegisterSerializer(data={'email': 'valid@email.com',
-                                                        'password': 'Abc12345678'})
+            valid_serializer = serializers.RegisterSerializer(data={'email': 'valid@email.com',
+                                                                    'password': 'Abc12345678'})
             self.assertTrue(
                 valid_serializer.is_valid()
             )
@@ -87,8 +88,8 @@ class RegisterSerializerTest(TestCase):
             Make sure the password validator doesnt accept passwords that contains
             less than 8 letters.
             """
-            s = RegisterSerializer(data={'email': 'john@email.com',
-                                         'password': '1234567'})
+            s = serializers.RegisterSerializer(data={'email': 'john@email.com',
+                                                     'password': '1234567'})
             self.assertFalse(
                 s.is_valid()
             )
@@ -100,7 +101,7 @@ class RegisterSerializerTest(TestCase):
             """
             data = {'email': 'johndoe@email.com',
                     'password': 'Abc123456789'}
-            serializer = RegisterSerializer(data=data)
+            serializer = serializers.RegisterSerializer(data=data)
             serializer.save()
 
             self.assertNotEqual(
@@ -110,7 +111,7 @@ class RegisterSerializerTest(TestCase):
 
 class ShowCartsSerializerTest(TestCase):
     def setUp(self):
-        self.serializer_class = ShowCartsSerializer
+        self.serializer_class = serializers.ShowCartsSerializer
 
     def test_fields(self):
         self.assertEqual({'count', 'total_price', 'products'},
@@ -121,14 +122,14 @@ class ShowCartsSerializerTest(TestCase):
                          set(self.serializer_class.CartProductSerializer().fields.keys()))
 
 
-class CartSerializerTest(TestCase):
+class CartSerializerTest(APITestCase, AuthTokenCredentialsMixin):
     """
     Test core.api.serializers.CartSerializer
     """
     fixtures = ['products']
 
     def setUp(self):
-        self.serializer_class = CartSerializer
+        self.serializer_class = serializers.CartSerializer
 
     @classmethod
     def setUpTestData(cls):
@@ -145,19 +146,29 @@ class CartSerializerTest(TestCase):
 
     def test_validation(self):
         """Make sure serializer applies model level validations."""
+
+        #  Prepare request object.
+        self.login(token=self.user.auth_token.key)
+        response = self.client.post(reverse('api:cart'))
+
         product = Product.objects.get(title='Tea')
+        s = self.serializer_class(data={'product': product.id, 'customization': 'sth ...'},
+                                  context={'request': response.wsgi_request})
         # The product does not support customization.
-        s = self.serializer_class(data={'product': product.id, 'user': self.user.id,
-                                        'customization': 'sth ...'})
         with self.assertRaises(ValidationError):
             s.is_valid(raise_exception=True)
 
     def test_create(self):
         """Make sure serializer has ability to create Order object."""
+
+        self.login(token=self.user.auth_token.key)
+        response = self.client.post(reverse('api:cart'))
+
         product = Product.objects.first()
         s = self.serializer_class(data={'product': product.id,
                                         'user': self.user.id,
-                                        'customization': product.items[0]})
+                                        'customization': product.items[0]},
+                                  context={'request': response.wsgi_request})
 
         s.is_valid()
 

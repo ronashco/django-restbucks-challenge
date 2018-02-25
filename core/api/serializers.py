@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.serializers import (
-    Serializer, ModelSerializer, ValidationError, CharField
+    Serializer, ModelSerializer, ValidationError, CharField, SerializerMethodField,
+    HiddenField, CurrentUserDefault
 )
 from core.products.models import Product
 from core.orders.models import Cart
@@ -92,6 +93,8 @@ class CartSerializer(ModelSerializer):
     """
     core.carts.models.Cart model serialization.
     """
+    user = HiddenField(default=CurrentUserDefault())
+
     class Meta:
         model = Cart
         fields = ('product', 'user', 'customization')
