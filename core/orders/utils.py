@@ -22,10 +22,13 @@ def merge_cart_to_order(order_object):
     :return:
     """
     carts = Cart.objects.select_related('product').filter(user=order_object.user)
-    p = [OrderProduct(order=order_object,
-                      product=cart.product,
-                      customization=cart.customization,
-                      price=cart.product.price)
-         for cart in carts]
+    total_price = 0
+    order_products = []
+    for cart in carts:
+        order_products.append(OrderProduct(order=order_object,
+                                           product=cart.product,
+                                           customization=cart.customization,
+                                           price=cart.product.price))
+        total_price += cart.product.price
     carts.delete()
-    return OrderProduct.objects.bulk_create(p)
+    return total_price, OrderProduct.objects.bulk_create(order_products)

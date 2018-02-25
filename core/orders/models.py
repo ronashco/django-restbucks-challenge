@@ -15,6 +15,7 @@ class Order(models.Model):
     location = models.CharField(max_length=1, choices=((k, v) for k, v in LOCATIONS.items()),
                                 default='i')
     user = models.ForeignKey(User)
+    total_price = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

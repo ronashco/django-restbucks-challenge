@@ -116,8 +116,8 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'status', 'date', 'location', 'user')
-        read_only_fields = ('id', 'status', 'date')
+        fields = ('id', 'status', 'date', 'location', 'user', 'total_price')
+        read_only_fields = ('id', 'status', 'date', 'total_price')
 
     @staticmethod
     def get_status(obj):

@@ -106,5 +106,6 @@ class OrderListCreateView(ListCreateAPIView):
         return Order.objects.filter(user=self.request.user).order_by('-date')
 
     def perform_create(self, serializer):
-        order = serializer.save(user=self.request.user)
-        utils.merge_cart_to_order(order)
+        order = serializer.save(user=self.request.user, total_price=False)
+        total_price, order_products = utils.merge_cart_to_order(order)
+        serializer.save(total_price=total_price)

@@ -3,7 +3,7 @@ from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
-from core.orders.models import Cart
+from core.orders.models import Cart, Order, OrderProduct
 from core.accounts.tests import AuthTokenCredentialsMixin
 from core.products.models import Product
 from .. import views
@@ -362,8 +362,53 @@ class OrderCreateViewTest(BaseOrderTest):
             response.resolver_match.func.__name__, views.OrderListCreateView.as_view().__name__
         )
 
+    def test_validation(self):
+        self.login(token=self.user.auth_token.key)
+
+        response = self.client.post(self.url)
+        self.assertEqual(400, response.status_code)
+
+    def test_submit_order(self):
+        self.login(token=self.user.auth_token.key)
+        self.client.post(reverse('api:cart'), {'product': 1, 'customization': 'skim'})
+        self.client.post(reverse('api:cart'), {'product': 4})
+
+        self.client.post(self.url)
+
+        self.assertEqual(
+            1, Order.objects.count()
+        )
+
+        self.assertEqual(
+            0, Cart.objects.count()
+        )
+
+        self.assertEqual(
+            OrderProduct.objects.count(), 2
+        )
+
+    def test_stored_order(self):
+        self.login(token=self.user.auth_token.key)
+        self.client.post(reverse('api:cart'), {'product': 1, 'customization': 'skim'})
+        self.client.post(reverse('api:cart'), {'product': 4})
+
+        self.client.post(self.url, {'location': 'a'})
+
+        order = Order.objects.first()
+
+        self.assertEqual(
+            self.user, order.user
+        )
+
+        self.assertEqual(
+            order.total_price, 7
+        )
+
+        self.assertEqual(
+            order.location, 'a'
+        )
+
     def test_executed_queries(self):
-        #  Preparation request data.
         self.login(token=self.user.auth_token.key)
         r1 = self.client.post(reverse('api:cart'), data={'product': 4})
         r2 = self.client.post(reverse('api:cart'), data={'product': 1,
@@ -379,6 +424,7 @@ class OrderCreateViewTest(BaseOrderTest):
         - fetch cart items. 
         - delete cart items.
         - create OrderProduct objects.
+        - update order's total price
         """
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             self.client.post(self.url)

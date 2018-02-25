@@ -189,12 +189,12 @@ class OrderListSerializerTest(TestCase):
             email='m@email.com',
             password='Abc123456789',
         )
-        Order.objects.create(user=user)
-        Order.objects.create(user=user)
+        Order.objects.create(user=user, total_price=0)
+        Order.objects.create(user=user, total_price=0)
 
     def test_fields(self):
         self.assertEqual(
-            set(self.serializer_class().fields), {'id', 'status', 'date', 'location', 'user'}
+            set(self.serializer_class().fields), {'id', 'status', 'date', 'location', 'user', 'total_price'}
         )
 
     def test_data(self):

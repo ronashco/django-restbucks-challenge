@@ -27,6 +27,7 @@ class BaseOrderTest(TestCase):
                                             password='Abc123456789')
         cls.order = Order.objects.create(
             user=cls.user,
+            total_price=0
         )
 
 
@@ -104,7 +105,7 @@ class OrderModelTest(BaseOrderTest):
             self.order.location_label, 'In shop'
         )
 
-        order = Order.objects.create(user=self.user, location='a')
+        order = Order.objects.create(user=self.user, total_price=0, location='a')
 
         self.assertEqual(
             order.location_label, 'Away'
