@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from core.products.models import Product
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from .models import Order, OrderProduct, Cart, CartApiModel
+from ..models import Order, OrderProduct, Cart, CartApiModel
 
 User = get_user_model()
 
