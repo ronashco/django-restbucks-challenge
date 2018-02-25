@@ -1,8 +1,7 @@
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
-from django.http.request import QueryDict
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView
+    ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, ListCreateAPIView
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,8 +9,8 @@ from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from core.products.models import Product
-from core.orders.utils import user_cart_detail
-from core.orders.models import Cart, CartApiModel
+from core.orders import utils
+from core.orders.models import Cart, CartApiModel, Order
 from . import serializers
 
 
@@ -85,7 +84,7 @@ class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
             # retrieve cart data
             user = self.request.user
             qs = Cart.objects.select_related('product').filter(user=user).order_by('-create_date')
-            return CartApiModel(*user_cart_detail(qs))
+            return CartApiModel(*utils.user_cart_detail(qs))
         else:
             # for any other purpose we use core.carts.models.Cart (primary cart model)
             return get_object_or_404(Cart, product_id=self.request.data.get('product'),
@@ -97,3 +96,15 @@ class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(status=status.HTTP_201_CREATED, headers=headers)
+
+
+class OrderListCreateView(ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.OrderListSerializer
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by('-date')
+
+    def perform_create(self, serializer):
+        order = serializer.save(user=self.request.user)
+        utils.merge_cart_to_order(order)

@@ -308,3 +308,77 @@ class CartViewDatabaseQueriesTest(BaseCartTest):
             # 3 - store cart object
             self.login(token=self.user.auth_token.key)
             self.client.post(self.url, data=data)
+
+
+class BaseOrderTest(APITestCase, AuthTokenCredentialsMixin):
+    fixtures = ['products']
+
+    def setUp(self):
+        self.url = reverse('api:order')
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            email='foo@email.com',
+            username='foo@email.com',
+            password='Abc123456789',
+        )
+
+
+class OrderListViewTest(BaseOrderTest):
+    """
+    Test core.orders.views.OrderListCreateView with get requests.
+    """
+    def test_url(self):
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.resolver_match.func.__name__, views.OrderListCreateView.as_view().__name__
+        )
+
+    def test_authentication(self):
+        """Make sure authentication is required."""
+        self.assertEqual(
+            401, self.client.get(self.url).status_code
+        )
+        self.login(token=self.user.auth_token.key)  # send login auth credentials with request.
+        self.assertEqual(
+            self.client.get(self.url).status_code, 200
+        )
+
+    def test_executed_queries(self):
+        with self.assertNumQueries(2):
+            self.login(token=self.user.auth_token.key)
+            self.client.get(self.url)
+
+
+class OrderCreateViewTest(BaseOrderTest):
+    """
+    Because The creation/retrieve view are the same classes,
+    we wont to test authentication.
+    """
+    def test_url(self):
+        response = self.client.post(self.url)
+        self.assertEqual(
+            response.resolver_match.func.__name__, views.OrderListCreateView.as_view().__name__
+        )
+
+    def test_executed_queries(self):
+        #  Preparation request data.
+        self.login(token=self.user.auth_token.key)
+        r1 = self.client.post(reverse('api:cart'), data={'product': 4})
+        r2 = self.client.post(reverse('api:cart'), data={'product': 1,
+                                                         'customization': 'skim'})
+        if r1.status_code != 201 or r2.status_code != 201:
+            self.fail()
+
+        """
+        In Create view we need 6 database queries:
+        - check user authentication.
+        - check cart validation (cart must be contains at least 1 item).
+        - create order.
+        - fetch cart items. 
+        - delete cart items.
+        - create OrderProduct objects.
+        """
+        with self.assertNumQueries(6):
+            self.client.post(self.url)

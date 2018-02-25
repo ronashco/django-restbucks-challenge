@@ -5,7 +5,7 @@ from django.shortcuts import reverse
 from rest_framework.serializers import ValidationError
 from rest_framework.test import APITestCase
 from core.products.models import Product
-from core.orders.models import Cart
+from core.orders.models import Cart, Order
 from core.accounts.tests import AuthTokenCredentialsMixin
 from .. import serializers
 
@@ -174,3 +174,34 @@ class CartSerializerTest(APITestCase, AuthTokenCredentialsMixin):
 
         self.assertIsInstance(s.save(), Cart)
         self.assertEqual(1, Cart.objects.count())
+
+
+class OrderListSerializerTest(TestCase):
+    fixtures = ['products']
+
+    def setUp(self):
+        self.serializer_class = serializers.OrderListSerializer
+
+    @classmethod
+    def setUpTestData(cls):
+        user = User.objects.create_user(
+            username='m@email.com',
+            email='m@email.com',
+            password='Abc123456789',
+        )
+        Order.objects.create(user=user)
+        Order.objects.create(user=user)
+
+    def test_fields(self):
+        self.assertEqual(
+            set(self.serializer_class().fields), {'id', 'status', 'date', 'location', 'user'}
+        )
+
+    def test_data(self):
+        s = self.serializer_class(Order.objects.values('id', 'date', 'status'), many=True)
+        self.assertEqual(2, len(s.data))
+
+    def test_read_only_fields(self):
+        s = self.serializer_class(Order.objects.values('id', 'date', 'status'), many=True)
+        for p in s.data:
+            self.assertNotIn('location', p)
