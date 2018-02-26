@@ -149,10 +149,9 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
         self.assertIn('id', json.keys())
         self.assertEqual(json['total_price'], 11)
         self.assertEqual(json['status'], 'Waiting')
-        # TODO:‌ add url to serializer.
-        # self.assertEqual(
-        #     json['url'], response.wsgi_request.build_absolute_uri('/api/orders/1/')
-        # )
+        self.assertEqual(
+            json['url'], response.wsgi_request.build_absolute_uri('/api/orders/1/')
+        )
 
     @tag('future')
     def test_fetch_order_item(self):
@@ -191,3 +190,79 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
             self.assertIn(
                 p, json['products']
             )
+
+
+class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
+    def test_submit_order(self):
+        """
+        Make sure users can submit order.
+        """
+        self.login(token=self.user.auth_token.key)
+
+        self.add_to_card(product=1, customization='skim')
+        self.add_to_card(product=2, customization='small')
+
+        response = self.client.post('/api/orders/')
+        result = {
+            'url': response.wsgi_request.build_absolute_uri('/api/orders/1/'),
+            'total_price': 11,
+            'status': 'w',
+            'location': 'i',
+            'date': str(datetime.now().date())
+        }
+        json = response.json()
+
+        self.assertEqual(json, result)
+
+    def test_change_waiting_order_location(self):
+        self.login(self.user.auth_token.key)
+
+        self.add_to_card(product=1, customization='skim')
+
+        order = self.client.post('/api/orders/').json()
+
+        json = self.client.patch('/api/orders/%s/' % order['id'], {'location': 'a'}).json()
+
+        self.assertEqual(json['location'], 'a')
+
+    @tag('future')
+    def test_cancel_a_waiting_order(self):
+        """
+        Make sure users can cancel an order.
+        """
+        self.login(token=self.user.auth_token.key)
+
+        self.add_to_card(product=1, customization='skim')
+
+        self.client.post('/api/orders/')  # submit order.
+
+        response = self.client.delete('/api/orders/1')
+
+        self.assertEqual(
+            response.content, b''
+        )
+
+        # make sure we have no order
+        self.assertEqual(
+            self.client.get('/api/orders/').json(),
+            list()
+        )
+
+    @tag('future')
+    def test_can_change_a_waiting_order(self):
+        self.login(token=self.user.auth_token.key)
+
+        self.add_to_card(product=1, customization='skim')
+        self.client.post('/api/orders/')  # submit order.
+
+        self.client.patch('/api/orders/1/product/1/',
+                          data={'customization': 'semi'})
+
+        orders = self.client.get('/api/orders/1/').json()
+
+        self.assertEqual(orders['products'][0], {
+            'title': 'Latte',
+            'price': 5,
+            'option': 'Milk',
+            'item': 'semi'
+        })
