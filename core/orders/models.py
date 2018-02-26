@@ -68,7 +68,7 @@ class OrderProduct(models.Model):
             """If the product has non-null option, the customization is required."""
 
             raise ValidationError("The product (%s) does not support customization." % self.product)
-        elif self.customization not in self.product.items:
+        elif self.customization is not None and self.customization not in self.product.items:
             """Customization must be in product.items"""
 
             raise ValidationError("customization choices are %s." % ",".join(self.product.items))
@@ -129,3 +129,19 @@ class CartApiModel:
         self.count = count
         self.total_price = total_price
         self.products = products
+
+
+class OrderProductApiModel:
+    """
+    This object helps us to serialize products in orders api.
+    Because of some customizations in represent data to clients,
+    we will use it in core.api.serializers.OrderSerializer to serialize products.
+    e.g. we want to use price field in core.orders.models.OrderProduct.price instead,
+    core.orders.models.Order.price.
+    """
+    def __init__(self, id_, title, price, option, item):
+        self.id = id_
+        self.title = title
+        self.price = price
+        self.option = option
+        self.item = item

@@ -166,14 +166,14 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
         json = self.client.get('/api/orders/1/').json()
 
         self.assertEquals(
-            json['total_price'], 17
+            json['total_price'], 11
         )
         self.assertEquals(
-            json['status'], 'Waiting'
+            json['status'], 'w'
         )
 
         self.assertEquals(
-            json['location'], 'Away'
+            json['location'], 'a'
         )
 
         date = datetime.now().strftime("%d %b %Y-%H:%M")
@@ -184,7 +184,7 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
 
         products = [
             {'title': 'Latte', 'price': 5, 'option': 'Milk', 'item': 'skim', 'id': 1},
-            {'title': 'Cappuccino', 'price': 6, 'option': 'Size', 'item': 'skim', 'id': 2},
+            {'title': 'Cappuccino', 'price': 6, 'option': 'Size', 'item': 'medium', 'id': 2},
         ]
 
         for p in products:

@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from core.products.models import Product
 from core.orders import utils
-from core.orders.models import Cart, CartApiModel, Order
+from core.orders.models import Cart, CartApiModel, Order, OrderProductApiModel
 from . import serializers
 
 
@@ -109,3 +109,36 @@ class OrderListCreateView(ListCreateAPIView):
         order = serializer.save(user=self.request.user, total_price=False)
         total_price, order_products = utils.merge_cart_to_order(order)
         serializer.save(total_price=total_price)
+
+
+class OrderView(RetrieveAPIView):
+    """
+    get:
+    Return order data with associated products.
+    """
+
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.OrderSerializer
+
+    def get_object(self):
+        kwargs = dict(user=self.request.user, id=self.kwargs['order_id'])
+        if self.request.method == 'GET':
+            # We need to fetch related products too.
+            queryset = Order.objects.prefetch_related('orderproduct_set',
+                                                      'orderproduct_set__product')
+            order = get_object_or_404(queryset, **kwargs)
+            order.order_products = self._get_order_products(order.orderproduct_set.all())
+            return order
+        else:
+            # For edit/delete purpose, only order object (with anymore related objects) is enough.
+            return get_object_or_404(Order, **kwargs)
+
+    @staticmethod
+    def _get_order_products(order_products_query_set):
+        # A helper method to fetch product data.
+        return [OrderProductApiModel(title=op.product.title,
+                                     price=op.price,
+                                     option=op.product.option,
+                                     item=op.customization,
+                                     id_=op.product.id)
+                for op in order_products_query_set]

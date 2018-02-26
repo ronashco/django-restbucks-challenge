@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from core.products.models import Product
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from ..models import Order, OrderProduct, Cart, CartApiModel
+from .. import models
 
 User = get_user_model()
 
@@ -25,7 +25,7 @@ class BaseOrderTest(TestCase):
         cls.user = User.objects.create_user(username='foo@email.com',
                                             email='foo@email.com',
                                             password='Abc123456789')
-        cls.order = Order.objects.create(
+        cls.order = models.Order.objects.create(
             user=cls.user,
             total_price=0
         )
@@ -35,12 +35,13 @@ class OrderModelTest(BaseOrderTest):
     """
     Test core.orders.Order model.
     """
+
     def test_creation(self):
         self.assertIsInstance(
-            self.order, Order
+            self.order, models.Order
         )
 
-        self.assertEqual(1, Order.objects.count())
+        self.assertEqual(1, models.Order.objects.count())
 
     def test_default_values(self):
         self.assertEqual('w', self.order.status)
@@ -53,7 +54,7 @@ class OrderModelTest(BaseOrderTest):
 
     def test_change_status_validation(self):
         """
-        Make sure Order._change_status prevents invalid changes.
+        Make sure models.Order._change_status prevents invalid changes.
         """
         self.order._change_status('invalid')
         self.assertEqual(
@@ -105,7 +106,7 @@ class OrderModelTest(BaseOrderTest):
             self.order.location_label, 'In shop'
         )
 
-        order = Order.objects.create(user=self.user, total_price=0, location='a')
+        order = models.Order.objects.create(user=self.user, total_price=0, location='a')
 
         self.assertEqual(
             order.location_label, 'Away'
@@ -116,6 +117,7 @@ class TestOrderProductModel(BaseOrderTest):
     """
     Test core.orders.OrderProduct model.
     """
+
     @classmethod
     def setUpTestData(cls):
         super(TestOrderProductModel, cls).setUpTestData()
@@ -125,20 +127,20 @@ class TestOrderProductModel(BaseOrderTest):
         """
         Make sure relation ship and related_name works well.
         """
-        OrderProduct.objects.create(product=self.product,
-                                    order=self.order,
-                                    customization=self.product.items[0],
-                                    price=self.product.price)
+        models.OrderProduct.objects.create(product=self.product,
+                                           order=self.order,
+                                           customization=self.product.items[0],
+                                           price=self.product.price)
         self.assertIsInstance(
             self.order.products.first(), Product
         )
-        self.assertEqual(1, OrderProduct.objects.count())
+        self.assertEqual(1, models.OrderProduct.objects.count())
 
     def test_save_method_runs_validations(self):
-        """Make sure OrderProduct.save calls OrderProduct.clean before save object"""
-        obj = OrderProduct(order=self.order, product=self.product,
-                           customization='Oops', price=self.product.price,
-                           )
+        """Make sure models.OrderProduct.save calls models.OrderProduct.clean before save object"""
+        obj = models.OrderProduct(order=self.order, product=self.product,
+                                  customization='Oops', price=self.product.price,
+                                  )
         with self.assertRaises(ValidationError):
             obj.save()
 
@@ -147,13 +149,13 @@ class TestOrderProductModel(BaseOrderTest):
         Make sure customization field in based on product customization.
         """
         with self.assertRaises(ValidationError):
-            OrderProduct.objects.create(
+            models.OrderProduct.objects.create(
                 product=self.product,
                 order=self.order,
                 price=self.product.price
             )
 
-            OrderProduct.objects.create(
+            models.OrderProduct.objects.create(
                 product=self.product,
                 order=self.order,
                 price=self.product.price,
@@ -162,7 +164,7 @@ class TestOrderProductModel(BaseOrderTest):
 
         product = Product.objects.get(title='Tea')
         with self.assertRaises(ValidationError):
-            OrderProduct.objects.create(
+            models.OrderProduct.objects.create(
                 product=product,
                 order=self.order,
                 price=product.price,
@@ -173,14 +175,14 @@ class TestOrderProductModel(BaseOrderTest):
         """
         Make sure product and order fields are unique together.
         """
-        OrderProduct.objects.create(
+        models.OrderProduct.objects.create(
             product=self.product,
             order=self.order,
             customization=self.product.items[0],
             price=self.product.price,
         )
         with self.assertRaises(IntegrityError):
-            OrderProduct.objects.create(
+            models.OrderProduct.objects.create(
                 product=self.product,
                 order=self.order,
                 customization=self.product.items[0],
@@ -196,7 +198,7 @@ class TestCartModel(TestCase):
         cls.product = Product.objects.first()
         cls.user = User.objects.create_user(username='foo@email.com',
                                             password='Abc123456789')
-        cls.cart = Cart.objects.create(
+        cls.cart = models.Cart.objects.create(
             product=cls.product,
             user=cls.user,
             customization=cls.product.items[0]
@@ -207,10 +209,10 @@ class TestCartModel(TestCase):
         Make sure object created properly.
         """
         self.assertIsInstance(
-            self.cart, Cart
+            self.cart, models.Cart
         )
         self.assertEqual(
-            Cart.objects.count(), 1
+            models.Cart.objects.count(), 1
         )
 
     def test_product_instance(self):
@@ -233,7 +235,7 @@ class TestCartModel(TestCase):
         """
         Make sure clean method (Cart.clean) works well.
         """
-        cart = Cart(product=self.product, user=self.user)
+        cart = models.Cart(product=self.product, user=self.user)
         # The product has option (option of the product is not null),
         # so we should pass one item to Cart class.
         with self.assertRaises(ValidationError):
@@ -242,17 +244,17 @@ class TestCartModel(TestCase):
         # In this case, the product has no option and
         # we are passing something as option, so the clean method should raises ValidationError
         product = Product.objects.get(title='Tea')
-        cart = Cart(product_id=product.id, user=self.user, customization='something')
+        cart = models.Cart(product_id=product.id, user=self.user, customization='something')
         with self.assertRaises(ValidationError):
             cart.clean()
 
         # make sure validation works when we call create method.
         with self.assertRaises(ValidationError):
-            Cart.objects.create(product_id=product.id, user=self.user, customization='something')
+            models.Cart.objects.create(product_id=product.id, user=self.user, customization='something')
 
         # select invalid item
         with self.assertRaises(ValidationError):
-            Cart.objects.create(product=self.product, user=self.user, customization='$invalid_item')
+            models.Cart.objects.create(product=self.product, user=self.user, customization='$invalid_item')
 
     def test_product_on_delete_is_cascade(self):
         """
@@ -260,7 +262,7 @@ class TestCartModel(TestCase):
         """
         self.product.delete()
         self.assertFalse(
-            Cart.objects.filter(id=self.cart.id).exists()
+            models.Cart.objects.filter(id=self.cart.id).exists()
         )
 
     def test_user_on_delete_is_cascade(self):
@@ -269,7 +271,7 @@ class TestCartModel(TestCase):
         """
         self.user.delete()
         self.assertFalse(
-            Cart.objects.filter(id=self.cart.id).exists()
+            models.Cart.objects.filter(id=self.cart.id).exists()
         )
 
     def test_date_fields(self):
@@ -286,7 +288,7 @@ class TestCartModel(TestCase):
         Make sure we can leave customization empty, if product.option is null.
         """
         product = Product.objects.get(title='Tea')
-        cart = Cart.objects.create(user=self.user, product=product)
+        cart = models.Cart.objects.create(user=self.user, product=product)
         self.assertIsNone(
             cart.customization
         )
@@ -300,14 +302,14 @@ class TestCartModel(TestCase):
             items=['small', 'medium', 'large']
         )
 
-        Cart.objects.create(product=product, user=self.user, customization='small')
+        models.Cart.objects.create(product=product, user=self.user, customization='small')
         with self.assertRaises(ValidationError):
-            Cart.objects.create(product=product, user=self.user, customization='small')
+            models.Cart.objects.create(product=product, user=self.user, customization='small')
 
 
 class CartApiModelTest(TestCase):
     def setUp(self):
-        self.cart_api_model = CartApiModel
+        self.cart_api_model = models.CartApiModel
 
     def test_attributes(self):
         obj = self.cart_api_model(count=1, total_price=2, products=[])
@@ -319,4 +321,27 @@ class CartApiModelTest(TestCase):
         )
         self.assertTrue(
             hasattr(obj, 'products') and obj.products == []
+        )
+
+
+class OrderProductApiModelTest(TestCase):
+    """
+    Make sure models.OrderProductApiModel works.
+    """
+    def test_attributes(self):
+        obj = models.OrderProductApiModel(id_=1, title='Hello', price=12, option='o1', item='i1')
+        self.assertTrue(
+            hasattr(obj, 'id') and obj.id == 1
+        )
+        self.assertTrue(
+            hasattr(obj, 'title') and obj.title == 'Hello'
+        )
+        self.assertTrue(
+            hasattr(obj, 'price') and obj.price == 12
+        )
+        self.assertTrue(
+            hasattr(obj, 'option') and obj.option == 'o1'
+        )
+        self.assertTrue(
+            hasattr(obj, 'item') and obj.item == 'i1'
         )

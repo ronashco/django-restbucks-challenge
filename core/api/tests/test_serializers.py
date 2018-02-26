@@ -5,7 +5,9 @@ from django.shortcuts import reverse
 from rest_framework.serializers import ValidationError
 from rest_framework.test import APITestCase
 from core.products.models import Product
-from core.orders.models import Cart, Order
+from core.orders.models import (
+    Cart, Order, OrderProduct, OrderProductApiModel
+)
 from core.accounts.tests import AuthTokenCredentialsMixin
 from .. import serializers
 
@@ -33,7 +35,6 @@ class TestProductListSerializer(TestCase):
         )
 
     def test_collection(self):
-
         products = Product.objects.all()
 
         result = [OrderedDict({'title': p.title, 'price': p.price,
@@ -205,3 +206,110 @@ class OrderListSerializerTest(TestCase):
         s = self.serializer_class(Order.objects.values('id', 'date', 'status'), many=True)
         for p in s.data:
             self.assertNotIn('location', p)
+
+
+class OrderSerializerTest(TestCase):
+    fixtures = ['products']
+
+    def setUp(self):
+        self.serializer_class = serializers.OrderSerializer
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            username='m@email.com',
+            email='m@email.com',
+            password='Abc123456789',
+        )
+        cls.order = Order.objects.create(user=cls.user, total_price=0)
+        product = Product.objects.first()
+        OrderProduct.objects.create(product=product,
+                                    order=cls.order,
+                                    customization=product.items[0],
+                                    price=product.price)
+
+    def test_fields(self):
+        serializer = self.serializer_class()
+        self.assertEqual(
+            {'total_price', 'status', 'location', 'date', 'products'},
+            set(serializer.fields)
+        )
+
+    def test_serialization(self):
+        """
+        Make sure order serializer represents data properly.
+        :return:
+        """
+        order = Order.objects.prefetch_related('products', 'orderproduct_set').first()
+        with self.assertRaises(AttributeError):
+            """
+            Every Order object that used to initialize serialize, 
+            should has a order_product attribute.
+           """
+            _ = self.serializer_class(order).data
+
+        order_products = [OrderProductApiModel(title=op.product.title,
+                                               price=op.price,
+                                               option=op.product.option,
+                                               item=op.customization, id_=op.product.id)
+                          for op in order.orderproduct_set.all()]
+
+        order.order_products = order_products
+
+        data = self.serializer_class(order).data
+        self.assertEqual(
+            data['total_price'], order.total_price
+        )
+        self.assertEqual(
+            data['status'], order.status
+        )
+
+        self.assertEqual(
+            data['location'], order.location
+        )
+        self.assertEqual(
+            data['date'], order.date.strftime("%d %b %Y-%H:%M")
+        )
+
+        for p in order_products:
+            d = {
+                'title': p.title,
+                'price': p.price,
+                'option': p.option,
+                'item': p.item,
+                'id': p.id,
+            }
+            self.assertIn(OrderedDict(d), data['products'])
+
+    def test_update(self):
+        """
+        Make sure we can use serializer in update order api.
+        :return:
+        """
+        serializer = self.serializer_class(instance=self.order,
+                                           data={'location': 'a', 'status': 'p'},
+                                           partial=True)
+        serializer.is_valid()
+        serializer.save()
+
+        #  Make sure location is writable.
+        self.assertEqual(
+            serializer.instance.location, 'a'
+        )
+
+        #  Make sure status is read only.
+        self.assertEqual(
+            serializer.instance.status, 'w'
+        )
+
+    def tests_validation(self):
+        order = Order.objects.create(
+            user=self.user,
+            total_price=0,
+            status='r',
+            location='a'
+        )
+
+        serializer = serializers.OrderSerializer(instance=order, data={'location': 'i'}, partial=True)
+        with self.assertRaises(ValidationError):
+            serializer.is_valid(raise_exception=True)

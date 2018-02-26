@@ -314,7 +314,7 @@ class BaseOrderTest(APITestCase, AuthTokenCredentialsMixin):
     fixtures = ['products']
 
     def setUp(self):
-        self.url = reverse('api:order')
+        self.url = reverse('api:orders')
 
     @classmethod
     def setUpTestData(cls):
@@ -428,3 +428,134 @@ class OrderCreateViewTest(BaseOrderTest):
         """
         with self.assertNumQueries(7):
             self.client.post(self.url)
+
+
+class RetrieveDetailOrderTest(BaseOrderTest):
+    def setUp(self):
+        self.url_namespace = 'api:order'
+
+    @classmethod
+    def setUpTestData(cls):
+        super(RetrieveDetailOrderTest, cls).setUpTestData()
+        # cls.user = super(RetrieveDetailOrderTest, cls).user
+        cls.order = Order.objects.create(
+            user=cls.user,
+            total_price=0
+        )
+
+    def test_authentication(self):
+        """
+        Make sure access needs authentication.
+        :return:
+        """
+        response = self.client.get(reverse(self.url_namespace, args=(self.order.id,)))
+        self.assertEqual(
+            401, response.status_code
+        )
+
+    def test_bound_view(self):
+        self.login(token=self.user.auth_token.key)
+        response = self.client.get(reverse(self.url_namespace, args=(self.order.id,)))
+        self.assertEqual(
+            response.resolver_match.func.__name__,
+            views.OrderView.as_view().__name__
+        )
+
+    def rest_url(self):
+        """
+        Make sure url regular expression wrote properly.
+        """
+        self.login(token=self.user.auth_token.key)
+        response = self.client.get(reverse(self.url_namespace, args=(self.order.id,)))
+        self.assertEqual(
+            response.status_code, 200
+        )
+
+        response = self.client.get(reverse(self.url_namespace, args=('a' + str(self.order.id),)))
+        self.assertEqual(response.status_code, 404)
+
+    def test_user_has_access_his_orders_only(self):
+        """
+        Make sure users cannot access to other people data
+        through enter order id in url.
+        """
+        user = User.objects.create_user(email='new_user@email.com',
+                                        username='new_user@email.com',
+                                        password='abc123456789')
+
+        self.login(token=user.auth_token.key)
+        response = self.client.get(reverse(self.url_namespace, args=(self.order.id,)))
+        self.assertEqual(
+            response.status_code, 404
+        )
+
+
+class RetrieveDetailOrderDatabaseQueriesTest(BaseOrderTest):
+    """
+    Test number of database queries in difference situations
+    for fetch an order object and related products.
+    """
+    def setUp(self):
+        self.url_namespace = 'api:order'
+
+    def test_with_anonymous_user(self):
+        """
+        Check database queries for users with no auth credentials.
+        """
+        with self.assertNumQueries(0):
+            self.client.get(reverse(self.url_namespace, args=(1,)))
+
+    def test_with_unrelated_user(self):
+        """
+        Check database queries for a user who requested another user data.
+        """
+        user = User.objects.create_user(email='new_user@email.com',
+                                        username='new_user@email.com',
+                                        password='abc123456789')
+        self.login(token=user.auth_token.key)
+        with self.assertNumQueries(2):
+            """
+            It should be done with 2 queries,
+            The first one for user authentication and the second one for find order.
+            """
+            self.client.get(reverse(self.url_namespace, args=(2,)))
+
+    def test_retrieve(self):
+        """
+        Check database queries for fetch order and related products.
+        """
+        self.login(self.user.auth_token.key)
+        order = Order.objects.create(
+            user=self.user,
+            total_price=0
+        )
+        # Prepare data.
+        p1 = Product.objects.first()
+        p2 = Product.objects.get(title='Tea')
+        p3 = Product.objects.get(title='Cookie')
+        OrderProduct.objects.create(
+            product=p1,
+            order=order,
+            customization=p1.items[0],
+            price=p1.price
+        )
+        OrderProduct.objects.create(
+            product=p2,
+            order=order,
+            price=p2.price
+        )
+
+        OrderProduct.objects.create(
+            product=p3,
+            order=order,
+            customization=p3.items[0],
+            price=p2.price
+        )
+
+        with self.assertNumQueries(4):
+            """
+            It should be done with 4 database queries.
+            The first one for check authentication,
+            and the next three ones for fetch order and related products.
+            """
+            self.client.get(reverse(self.url_namespace, args=(order.id,)))

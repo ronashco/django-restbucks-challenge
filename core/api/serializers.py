@@ -132,3 +132,33 @@ class OrderListSerializer(serializers.ModelSerializer):
         if not Cart.objects.filter(user=attrs.get('user')).exists():
             raise serializers.ValidationError("Cart is empty.")
         return attrs
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    Order detail serialization.
+    We will use it for show order with all details (products/date/location and everything),
+    The order object(s) must have a order_products attribute,
+    otherwise the serializer will raise AttributeError.
+    The order_products attribute is a container of core.orders.models.OrderProductApiModel objects.
+    We use OrderProductApiModel here instead of main Product model to serialize products.
+    We use this serializer for update a waiting order too.
+    """
+    class ProductSerializer(BaseProductSerializer):
+        item = serializers.CharField()
+
+        class Meta(BaseProductSerializer.Meta):
+            fields = BaseProductSerializer.Meta.fields + ['item', 'id']
+
+    products = ProductSerializer(many=True, source='order_products')
+    date = serializers.DateTimeField(format='%d %b %Y-%H:%M')
+
+    class Meta:
+        model = Order
+        fields = ('total_price', 'status', 'location', 'date', 'products')
+        read_only_fields = ('total_price', 'status', 'date', 'products')
+
+    def validate(self, attrs):
+        if self.instance.status != 'w':
+            raise serializers.ValidationError("You can only change waiting orders")
+        return attrs
