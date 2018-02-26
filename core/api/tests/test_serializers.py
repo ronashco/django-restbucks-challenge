@@ -238,16 +238,8 @@ class OrderSerializerTest(TestCase):
     def test_serialization(self):
         """
         Make sure order serializer represents data properly.
-        :return:
         """
         order = Order.objects.prefetch_related('products', 'orderproduct_set').first()
-        with self.assertRaises(AttributeError):
-            """
-            Every Order object that used to initialize serialize, 
-            should has a order_product attribute.
-           """
-            _ = self.serializer_class(order).data
-
         order_products = [OrderProductApiModel(title=op.product.title,
                                                price=op.price,
                                                option=op.product.option,

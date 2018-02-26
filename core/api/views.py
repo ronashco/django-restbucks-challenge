@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, ListCreateAPIView
+    ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, ListCreateAPIView,
+    RetrieveUpdateAPIView
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -111,10 +112,13 @@ class OrderListCreateView(ListCreateAPIView):
         serializer.save(total_price=total_price)
 
 
-class OrderView(RetrieveAPIView):
+class OrderView(RetrieveUpdateAPIView):
     """
     get:
     Return order data with associated products.
+
+    patch/put:
+    Update a waiting order.
     """
 
     permission_classes = (IsAuthenticated,)

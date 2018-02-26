@@ -559,3 +559,103 @@ class RetrieveDetailOrderDatabaseQueriesTest(BaseOrderTest):
             and the next three ones for fetch order and related products.
             """
             self.client.get(reverse(self.url_namespace, args=(order.id,)))
+
+
+class OrderUpdateViewTest(BaseOrderTest):
+    """
+    Test OrderView with put/patch.
+    """
+
+    def setUp(self):
+        self.url_namespace = 'api:order'
+
+    @classmethod
+    def setUpTestData(cls):
+        super(OrderUpdateViewTest, cls).setUpTestData()
+        cls.order = Order.objects.create(
+            total_price=0,
+            user=cls.user
+        )
+
+    def test_users_can_update_only_their_orders(self):
+        """
+        Make sure users cant update other people.
+        """
+        user = User.objects.create_user(email='new_user@email.com',
+                                        username='new_user@email.com',
+                                        password='abc123456789')
+        self.login(token=user.auth_token.key)
+        response = self.client.patch(reverse(self.url_namespace, args=(self.order.id,)))
+        self.assertEqual(
+            response.status_code, 404
+        )
+
+    def test_non_waiting_order(self):
+        """
+        Make sure it's not possible to update orders with non waiting status.
+        """
+        self.login(self.user.auth_token.key)
+        order = Order.objects.create(user=self.user, total_price=0, status='p')
+        response = self.client.patch(reverse(self.url_namespace, args=(order.id,)),
+                                     {'location': 'a'})
+        self.assertEqual(
+            response.status_code, 400
+        )
+
+        self.assertEqual(
+            Order.objects.get(id=order.id).location, 'i'
+        )
+
+    def test_waiting_order_update(self):
+        """
+        Make sure users can update waiting orders (only location field).
+        """
+        self.login(self.user.auth_token.key)
+        order = Order.objects.create(total_price=0, user=self.user)
+        data = {'location': 'a',
+                'status': 'sth',
+                'user_id': 4,
+                'total_price': '134'}
+        response = self.client.patch(reverse(self.url_namespace, args=(order.id,)), data)
+
+        updated_order = Order.objects.get(id=order.id)
+
+        self.assertEqual(
+            response.status_code, 200
+        )
+        self.assertEqual(
+            updated_order.location, 'a'
+        )
+
+        self.assertEqual(
+            updated_order.total_price, 0
+        )
+
+        self.assertEqual(
+            updated_order.user, self.user
+        )
+
+        self.assertEqual(
+            updated_order.status, 'w'
+        )
+
+    def test_non_waiting_database_queries(self):
+        """
+        Make sure unauthorized updates have fewer queries.
+        """
+        self.login(self.user.auth_token.key)
+        order = Order.objects.create(total_price=0, user=self.user, status='r')
+
+        with self.assertNumQueries(2):
+            self.client.patch(reverse(self.url_namespace, args=(order.id, )),
+                              {'location': 'a'})
+
+    def test_update_waiting_order_database_queries(self):
+        """
+        Check database queries for update waiting order.
+        """
+        self.login(self.user.auth_token.key)
+
+        with self.assertNumQueries(3):
+            self.client.patch(reverse(self.url_namespace, args=(self.order.id,)),
+                              {'location': 'a'})

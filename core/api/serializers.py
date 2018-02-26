@@ -150,7 +150,7 @@ class OrderSerializer(serializers.ModelSerializer):
         class Meta(BaseProductSerializer.Meta):
             fields = BaseProductSerializer.Meta.fields + ['item', 'id']
 
-    products = ProductSerializer(many=True, source='order_products')
+    products = ProductSerializer(many=True, source='order_products', read_only=True)
     date = serializers.DateTimeField(format='%d %b %Y-%H:%M')
 
     class Meta:
