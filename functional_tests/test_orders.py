@@ -1,5 +1,5 @@
-from unittest import skip
 from datetime import datetime
+from django.test import tag
 from rest_framework.test import APILiveServerTestCase
 from core.accounts.tests import AuthTokenCredentialsMixin
 from .utils import create_user
@@ -154,16 +154,16 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
         #     json['url'], response.wsgi_request.build_absolute_uri('/api/orders/1/')
         # )
 
-    @skip  # Its about future.
+    @tag('future')
     def test_fetch_order_item(self):
         self.login(token=self.user.auth_token.key)
 
         self.add_to_card(product=1, customization='skim')
-        self.add_to_card(product=2, customization='medium', count=2)
+        self.add_to_card(product=2, customization='medium')
 
         self.client.post('/api/orders/', data={'location': 'a'})
 
-        json = self.client.get('/api/orders/1/')
+        json = self.client.get('/api/orders/1/').json()
 
         self.assertEquals(
             json['total_price'], 17
@@ -176,13 +176,15 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
             json['location'], 'Away'
         )
 
+        date = datetime.now().strftime("%d %b %Y-%H:%M")
+
         self.assertEquals(
-            json['date'], str(datetime.now().date())
+            json['date'], date
         )
 
         products = [
-            {'title': 'Latte', 'unit_price': 5, 'option': 'Milk', 'item': 'skim', 'id': 1, 'count': 1},
-            {'title': 'Cappuccino', 'unit_price': 6, 'option': 'Size', 'item': 'skim', 'id': 2, 'count': 2},
+            {'title': 'Latte', 'price': 5, 'option': 'Milk', 'item': 'skim', 'id': 1},
+            {'title': 'Cappuccino', 'price': 6, 'option': 'Size', 'item': 'skim', 'id': 2},
         ]
 
         for p in products:

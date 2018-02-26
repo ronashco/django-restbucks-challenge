@@ -125,13 +125,12 @@ class TestOrderProductModel(BaseOrderTest):
         """
         Make sure relation ship and related_name works well.
         """
-        self.order.products.create(
-            product=self.product,
-            customization=self.product.items[0],
-            price=self.product.price,
-        )
+        OrderProduct.objects.create(product=self.product,
+                                    order=self.order,
+                                    customization=self.product.items[0],
+                                    price=self.product.price)
         self.assertIsInstance(
-            self.order.products.first(), OrderProduct
+            self.order.products.first(), Product
         )
         self.assertEqual(1, OrderProduct.objects.count())
 
@@ -148,21 +147,24 @@ class TestOrderProductModel(BaseOrderTest):
         Make sure customization field in based on product customization.
         """
         with self.assertRaises(ValidationError):
-            self.order.products.create(
+            OrderProduct.objects.create(
                 product=self.product,
+                order=self.order,
                 price=self.product.price
             )
 
-            self.order.products.create(
+            OrderProduct.objects.create(
                 product=self.product,
+                order=self.order,
                 price=self.product.price,
                 customization='invalid.'
             )
 
         product = Product.objects.get(title='Tea')
         with self.assertRaises(ValidationError):
-            self.order.products.create(
+            OrderProduct.objects.create(
                 product=product,
+                order=self.order,
                 price=product.price,
                 customization='invalid.'
             )
@@ -171,14 +173,16 @@ class TestOrderProductModel(BaseOrderTest):
         """
         Make sure product and order fields are unique together.
         """
-        self.order.products.create(
+        OrderProduct.objects.create(
             product=self.product,
+            order=self.order,
             customization=self.product.items[0],
             price=self.product.price,
         )
         with self.assertRaises(IntegrityError):
-            self.order.products.create(
+            OrderProduct.objects.create(
                 product=self.product,
+                order=self.order,
                 customization=self.product.items[0],
                 price=self.product.price,
             )

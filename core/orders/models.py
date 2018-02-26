@@ -15,6 +15,7 @@ class Order(models.Model):
     location = models.CharField(max_length=1, choices=((k, v) for k, v in LOCATIONS.items()),
                                 default='i')
     user = models.ForeignKey(User)
+    products = models.ManyToManyField(Product, through='OrderProduct')
     total_price = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -53,7 +54,7 @@ class Order(models.Model):
 
 class OrderProduct(models.Model):
     product = models.ForeignKey(Product)
-    order = models.ForeignKey(Order, related_query_name='products', related_name='products')
+    order = models.ForeignKey(Order)
     customization = models.CharField(max_length=250, blank=True, null=True)
     price = models.IntegerField()
 
