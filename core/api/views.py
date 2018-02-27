@@ -92,6 +92,9 @@ class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
                                      user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        """
+        Initializer serializer, save it and return response with no content.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -100,6 +103,13 @@ class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
 
 
 class OrderListCreateView(ListCreateAPIView):
+    """
+    get:
+    Return all existing user's orders.
+
+    post:
+    Submit an order.
+    """
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.OrderListSerializer
 
@@ -143,6 +153,7 @@ class OrderView(RetrieveUpdateDestroyAPIView):
             order.order_products = self._get_order_products(order.orderproduct_set.all())
             return order
         elif self.request.method == 'DELETE':
+            # users can cancel only waiting orders.
             kwargs.update({'status': 'w'})
             return get_object_or_404(Order, **kwargs)
         else:

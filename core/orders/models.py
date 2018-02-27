@@ -107,7 +107,7 @@ class Cart(models.Model):
         elif self.customization is None and self.product.option is not None:
             raise ValidationError(
                 {"customization": "Customization can not be null"
-                                  "the product (%s) contains option" % self.product}
+                                  " the product (%s) contains option" % self.product}
             )
         elif self.customization is not None and self.customization not in self.product.items:
             raise ValidationError(
