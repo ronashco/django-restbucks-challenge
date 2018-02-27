@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, ListCreateAPIView,
-    RetrieveUpdateAPIView
+    RetrieveUpdateDestroyAPIView
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -121,7 +121,7 @@ class OrderListCreateView(ListCreateAPIView):
         serializer.save(total_price=total_price)
 
 
-class OrderView(RetrieveUpdateAPIView):
+class OrderView(RetrieveUpdateDestroyAPIView):
     """
     get:
     Return order data with associated products.
@@ -142,6 +142,9 @@ class OrderView(RetrieveUpdateAPIView):
             order = get_object_or_404(queryset, **kwargs)
             order.order_products = self._get_order_products(order.orderproduct_set.all())
             return order
+        elif self.request.method == 'DELETE':
+            kwargs.update({'status': 'w'})
+            return get_object_or_404(Order, **kwargs)
         else:
             # For edit/delete purpose, only order object (with anymore related objects) is enough.
             return get_object_or_404(Order, **kwargs)

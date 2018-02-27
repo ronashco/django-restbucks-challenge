@@ -659,3 +659,79 @@ class OrderUpdateViewTest(BaseOrderTest):
         with self.assertNumQueries(3):
             self.client.patch(reverse(self.url_namespace, args=(self.order.id,)),
                               {'location': 'a'})
+
+
+class OrderDeleteViewTest(BaseOrderTest):
+    """
+    Make core.api.views.OrderView works with DELETE requests.
+    """
+    def setUp(self):
+        self.url_namespace = 'api:order'
+
+    def test_for_non_waiting_order(self):
+        order = Order.objects.create(
+            user=self.user,
+            total_price=0,
+            status='p'
+        )
+
+        self.login(token=self.user.auth_token.key)
+
+        response = self.client.delete(reverse(self.url_namespace, args=(order.id,)))
+        self.assertEqual(
+            response.status_code, 404
+        )
+
+        self.assertTrue(
+            Order.objects.filter(id=order.id).exists()
+        )
+
+    def test_for_waiting_order(self):
+        order = Order.objects.create(
+            user=self.user,
+            total_price=0,
+        )
+
+        self.login(token=self.user.auth_token.key)
+
+        response = self.client.delete(reverse(self.url_namespace, args=(order.id,)))
+        self.assertEqual(
+            response.status_code, 204
+        )
+
+        self.assertFalse(
+            Order.objects.filter(id=order.id).exists()
+        )
+
+    def test_database_queries(self):
+        self.login(token=self.user.auth_token.key)
+        o1 = Order.objects.create(
+            user=self.user,
+            total_price=0
+        )
+
+        # Test database queries for a waiting order.
+        with self.assertNumQueries(4):
+            """
+            It should done in 4 queries.
+            - user authentication
+            - find order
+            - delete order
+            - deleted related products
+            """
+            self.client.delete(reverse(self.url_namespace, args=(o1.id,)))
+
+        o2 = Order.objects.create(
+            user=self.user,
+            total_price=0,
+            status='p'
+        )
+
+        # Test database queries for a non waiting order.
+        with self.assertNumQueries(2):
+            """
+            It should done in 2 queries.
+            - user authentication
+            - find order
+            """
+            self.client.delete(reverse(self.url_namespace, args=(o2.id,)))

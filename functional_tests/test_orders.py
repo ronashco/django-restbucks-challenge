@@ -227,7 +227,6 @@ class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
 
         self.assertEqual(json['location'], 'a')
 
-    @tag('future')
     def test_cancel_a_waiting_order(self):
         """
         Make sure users can cancel an order.
@@ -236,9 +235,9 @@ class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
 
         self.add_to_card(product=1, customization='skim')
 
-        self.client.post('/api/orders/')  # submit order.
+        response = self.client.post('/api/orders/')  # submit order.
 
-        response = self.client.delete('/api/orders/1')
+        response = self.client.delete('/api/orders/%s/' % response.json().get('id'))
 
         self.assertEqual(
             response.content, b''
