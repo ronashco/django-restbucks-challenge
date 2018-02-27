@@ -126,12 +126,16 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
                 total_price: X,
                 status: X,
                 url: our_domain/api/orders/X1,
+                date:‌ x.x.x,
+                location: x
             },
             {
                 id:‌‌ X2,
                 total_price: X,
                 status: X,
                 url: our_domain/api/orders/X2,
+                date:‌ x.x.x,
+                location: x
             },
             ...
         ]
@@ -144,15 +148,15 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
         self.client.post('/api/orders/')  # submit orders.
 
         response = self.client.get('/api/orders/')
-        json = response.json()
+        json = response.json()[0]
 
-        print(json)
-        # self.assertIn('id', json)
-        # self.assertEqual(json['total_price'], 11)
-        # self.assertEqual(json['status'], 'w')
-        # self.assertEqual(
-        #     json['url'], response.wsgi_request.build_absolute_uri('/api/orders/%s/' % json['id'])
-        # )
+        self.assertTrue(
+            set(json.keys()), {'id', 'total_price', 'status', 'url', 'date', 'location'}
+        )
+        self.assertEqual(json['status'], 'w')
+        self.assertEqual(json['total_price'], 11)
+        self.assertEqual(json['date'], datetime.now().strftime("%d %b %Y-%H:%M"))
+        self.assertEqual(json['url'], response.wsgi_request.build_absolute_uri('/api/orders/%s/' % json['id']))
 
     @tag('future')
     def test_fetch_order_item(self):
