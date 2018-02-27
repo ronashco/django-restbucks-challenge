@@ -106,6 +106,15 @@ class OrderListCreateView(ListCreateAPIView):
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-date')
 
+    def get_serializer(self, *args, **kwargs):
+        if self.request.method == 'POST':
+            """
+            in POST requests, we want to just store an order object and return it.
+            so we wont to return a list of objects.
+            """
+            kwargs.update({'many': False})
+        return super(OrderListCreateView, self).get_serializer(*args, **kwargs)
+
     def perform_create(self, serializer):
         order = serializer.save(user=self.request.user, total_price=False)
         total_price, order_products = utils.merge_cart_to_order(order)

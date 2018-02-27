@@ -110,23 +110,16 @@ class OrderListSerializer(serializers.ModelSerializer):
     """
     We will use it for create/retrieve order objects.
     """
-    status = serializers.SerializerMethodField(source='status')
+    url = serializers.HyperlinkedIdentityField(view_name='api:order',
+                                               lookup_field='id',
+                                               lookup_url_kwarg='order_id')
     date = serializers.DateTimeField(format='%d %b %Y-%H:%M', required=False)
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Order
-        fields = ('id', 'status', 'date', 'location', 'user', 'total_price')
-        read_only_fields = ('id', 'status', 'date', 'total_price')
-
-    @staticmethod
-    def get_status(obj):
-        if isinstance(obj, Order):
-            return obj.status_label
-        try:
-            return STATUS.get(obj['status'], obj['status'])
-        except KeyError:
-            return None
+        fields = ('id', 'status', 'date', 'location', 'user', 'total_price', 'url')
+        read_only_fields = ('id', 'status', 'date', 'total_price', 'url')
 
     def validate(self, attrs):
         if not Cart.objects.filter(user=attrs.get('user')).exists():

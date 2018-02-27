@@ -195,17 +195,26 @@ class OrderListSerializerTest(TestCase):
 
     def test_fields(self):
         self.assertEqual(
-            set(self.serializer_class().fields), {'id', 'status', 'date', 'location', 'user', 'total_price'}
+            set(self.serializer_class().fields),
+            {'id', 'status', 'date', 'location', 'user', 'total_price', 'url'}
         )
 
     def test_data(self):
-        s = self.serializer_class(Order.objects.values('id', 'date', 'status'), many=True)
+        #  prepare request object.
+        response = self.client.get(reverse('api:orders'))
+
+        s = self.serializer_class(Order.objects.all(),
+                                  many=True,
+                                  context={'request': response.wsgi_request})
         self.assertEqual(2, len(s.data))
 
-    def test_read_only_fields(self):
-        s = self.serializer_class(Order.objects.values('id', 'date', 'status'), many=True)
+    def test_write_only_fields(self):
+        response = self.client.get(reverse('api:orders'))
+        s = self.serializer_class(Order.objects.all(),
+                                  many=True,
+                                  context={'request': response.wsgi_request})
         for p in s.data:
-            self.assertNotIn('location', p)
+            self.assertNotIn('user', p)
 
 
 class OrderSerializerTest(TestCase):
