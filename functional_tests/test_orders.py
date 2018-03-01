@@ -158,16 +158,15 @@ class OrderListTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
         self.assertEqual(json['date'], datetime.now().strftime("%d %b %Y-%H:%M"))
         self.assertEqual(json['url'], response.wsgi_request.build_absolute_uri('/api/orders/%s/' % json['id']))
 
-    @tag('future')
     def test_fetch_order_item(self):
         self.login(token=self.user.auth_token.key)
 
         self.add_to_card(product=1, customization='skim')
         self.add_to_card(product=2, customization='medium')
 
-        self.client.post('/api/orders/', data={'location': 'a'})
+        order = self.client.post('/api/orders/', data={'location': 'a'}).json()
 
-        json = self.client.get('/api/orders/1/').json()
+        json = self.client.get(order['url']).json()
 
         self.assertEquals(
             json['total_price'], 11
@@ -212,7 +211,7 @@ class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
 
         result = {
             'id': json['id'],
-            'url': response.wsgi_request.build_absolute_uri('/api/orders/%s/' % json['id']),
+            'url': response.wsgi_request.build_absolute_uri(json['url']),
             'total_price': 11,
             'status': 'w',
             'location': 'i',
@@ -227,7 +226,7 @@ class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
 
         order = self.client.post('/api/orders/').json()
 
-        json = self.client.patch('/api/orders/%s/' % order['id'], {'location': 'a'}).json()
+        json = self.client.patch(order['url'], {'location': 'a'}).json()
 
         self.assertEqual(json['location'], 'a')
 
@@ -241,7 +240,7 @@ class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
 
         response = self.client.post('/api/orders/')  # submit order.
 
-        response = self.client.delete('/api/orders/%s/' % response.json().get('id'))
+        response = self.client.delete(response.json().get('url'))
 
         self.assertEqual(
             response.content, b''
@@ -253,21 +252,45 @@ class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
             list()
         )
 
-    @tag('future')
-    def test_can_change_a_waiting_order(self):
+
+@tag('future')
+class ChangeOrderProduct(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
+    def test_can_change_product(self):
         self.login(token=self.user.auth_token.key)
 
         self.add_to_card(product=1, customization='skim')
-        self.client.post('/api/orders/')  # submit order.
+        order = self.client.post('/api/orders/').json()  # submit order.
 
-        self.client.patch('/api/orders/1/product/1/',
+        self.client.patch('/api/orders/%s/product/1/' % order['id'],
                           data={'customization': 'semi'})
 
-        orders = self.client.get('/api/orders/1/').json()
+        orders = self.client.get('/api/orders/%s/' % order['id']).json()
 
         self.assertEqual(orders['products'][0], {
             'title': 'Latte',
             'price': 5,
             'option': 'Milk',
-            'item': 'semi'
+            'item': 'semi',
+            'id': 1
         })
+
+    def test_remove_product(self):
+        self.login(token=self.user.auth_token.key)
+
+        self.add_to_card(product=1, customization='skim')  # add a Latte to cart
+        self.add_to_card(product=4)  # add a tea
+        order = self.client.post('/api/orders/').json()  # submit order.
+
+        self.client.delete('%sproduct/1/' % order['url'])
+
+        orders = self.client.get(order['url']).json()[0]
+
+        self.assertEqual(orders['total_price'], 1)
+        self.assertEqual(1, len(orders['products']))
+
+        #  make sure product was removed after remove all product.
+        self.client.delete('%sproduct/1/' % order['url'])
+
+        response = self.client.get(order['url'])
+        for p in response.json().get('products'):
+            self.assertNotEqual(p.get('id'), 1)
