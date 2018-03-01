@@ -189,6 +189,30 @@ class TestOrderProductModel(BaseOrderTest):
                 price=self.product.price,
             )
 
+    def test_empty_order_signal(self):
+        """
+        Make sure core.orders.models.remove_empty_orders removes
+        orders with no related product automatically.
+        """
+
+        order = models.Order.objects.create(
+            user=self.user,
+            total_price=0
+        )
+
+        op = models.OrderProduct.objects.create(
+            product=self.product,
+            order=order,
+            customization=self.product.items[0],
+            price=self.product.price
+        )
+
+        op.delete()
+
+        self.assertFalse(
+            models.Order.objects.filter(id=order.id).exists()
+        )
+
 
 class TestCartModel(TestCase):
     fixtures = ['products']

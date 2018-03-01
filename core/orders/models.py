@@ -1,6 +1,8 @@
-from django.db import models
+from django.db import models, connection
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 from core.products.models import Product
 
 User = get_user_model()
@@ -145,3 +147,19 @@ class OrderProductApiModel:
         self.price = price
         self.option = option
         self.item = item
+
+
+@receiver(post_delete, sender=OrderProduct)
+def remove_empty_orders(sender, **kwargs):
+    """
+    We want to remove Order if it has no related product.
+    For less database queries, We execute raw sql.
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            DELETE FROM orders_order 
+            WHERE id = {order_id} AND (SELECT count(*) FROM orders_orderproduct 
+                                       WHERE order_id = {order_id}) = 0;
+            """.format(order_id=kwargs['instance'].order_id)
+        )

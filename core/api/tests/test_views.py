@@ -735,3 +735,231 @@ class OrderDeleteViewTest(BaseOrderTest):
             - find order
             """
             self.client.delete(reverse(self.url_namespace, args=(o2.id,)))
+
+
+class OrderProductUpdateViewTest(BaseOrderTest):
+    def setUp(self):
+        self.url_namespace = 'api:order-product'
+
+    @classmethod
+    def setUpTestData(cls):
+        super(OrderProductUpdateViewTest, cls).setUpTestData()
+
+        cls.product = Product.objects.first()
+        cls.order = Order.objects.create(
+            user=cls.user,
+            total_price=0
+        )
+
+        cls.op = OrderProduct.objects.create(
+            order=cls.order,
+            product=cls.product,
+            customization=cls.product.items[0],
+            price=cls.product.price
+        )
+
+    def test_url(self):
+        """
+        Make sure url connected to view properly.
+        """
+        response = self.client.patch(reverse(self.url_namespace, args=(1, 1)))
+        self.assertEqual(
+            response.resolver_match.func.__name__,
+            views.OrderProductView.as_view().__name__
+        )
+
+    def test_authentication(self):
+        """
+        Make sure authentication is required.
+        """
+
+        response = self.client.patch(reverse(self.url_namespace,
+                                             args=(self.order.id, self.product.id)))
+        self.assertEqual(
+            response.status_code, 401
+        )
+
+    def test_update(self):
+        """
+        Make sure view can update a product customization.
+        """
+        self.order.status = 'w'
+        self.order.save()
+
+        self.login(token=self.user.auth_token.key)
+
+        url = reverse(self.url_namespace, args=(self.order.id, self.product.id))
+        response = self.client.patch(url, {'customization': self.product.items[1]})
+
+        self.assertEqual(
+            response.status_code, 200
+        )
+
+        self.assertEqual(
+            OrderProduct.objects.get(product=self.product, order=self.order).customization,
+            self.product.items[1]
+        )
+
+    def test_update_with_non_waiting_order(self):
+        """
+        Make sure cannot change an order that belongs to non waiting order.
+        """
+
+        self.order.status = 'r'
+        self.order.save()
+
+        self.login(token=self.user.auth_token.key)
+
+        response = self.client.patch(reverse(self.url_namespace, args=(self.order.id, self.product.id)),
+                                     {'customization': self.product.items[1]})
+        # The view should prevents update orders with non waiting status.
+        self.assertEqual(
+            response.status_code, 400
+        )
+
+        # make sure it's not updated in db.
+        self.assertEqual(
+            OrderProduct.objects.first().customization, self.product.items[0]
+        )
+
+
+class OrderProductDeleteViewTest(BaseOrderTest):
+    def setUp(self):
+        self.url_namespace = 'api:order-product'
+
+    @classmethod
+    def setUpTestData(cls):
+        super(OrderProductDeleteViewTest, cls).setUpTestData()
+        cls.product = Product.objects.first()
+        cls.order = Order.objects.create(
+            user=cls.user,
+            total_price=0
+        )
+
+        cls.op = OrderProduct.objects.create(order=cls.order,
+                                             product=cls.product,
+                                             customization=cls.product.items[0],
+                                             price=cls.product.price)
+
+    def test_response(self):
+        self.login(token=self.user.auth_token.key)
+
+        response = self.client.delete(reverse(self.url_namespace,
+                                              args=(self.order.id, self.product.id)))
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_deletion(self):
+        self.login(token=self.user.auth_token.key)
+
+        self.client.delete(reverse(self.url_namespace,
+                                   args=(self.order.id, self.product.id)))
+
+        self.assertEqual(
+            OrderProduct.objects.count(), 0
+        )
+
+    def test_non_waiting_order(self):
+        self.login(token=self.user.auth_token.key)
+
+        order = Order.objects.create(
+            user=self.user,
+            total_price=0,
+            status='p'
+        )
+
+        response = self.client.delete(reverse(self.url_namespace,
+                                              args=(order.id, self.product.id)))
+
+        self.assertEqual(
+            response.status_code, 404
+        )
+
+    def test_total_price(self):
+        """
+        Make sure Order.total_price will update after remove product to order.
+        """
+        self.login(token=self.user.auth_token.key)
+
+        order = Order.objects.create(
+            user=self.user,
+            total_price=7,
+            status='w'
+        )
+        p1 = Product.objects.first()
+        p2 = Product.objects.get(title='Tea')
+        OrderProduct.objects.create(
+            product=p1,
+            order=order,
+            price=p1.price,
+            customization=p1.items[0]
+        )
+
+        OrderProduct.objects.create(
+            product=p2,
+            order=order,
+            price=p2.price
+        )
+        self.client.delete(reverse('api:order-product', args=(order.id, p1.id)))
+
+        self.assertEqual(
+            Order.objects.get(id=order.id).total_price, 2
+        )
+
+    def test_db_queries(self):
+        self.login(token=self.user.auth_token.key)
+
+        with self.assertNumQueries(5):
+            """
+            It should be done in 3 queries:
+            - user authentication
+            - find OrderProduct object
+            - delete it
+            - update Order.total price
+            - core.orders.models.remove_empty_orders receiver.
+            """
+            self.client.delete(reverse(self.url_namespace,
+                                       args=(self.order.id, self.product.id)))
+
+
+class OrderProductViewDatabaseQueriesTest(BaseOrderTest):
+    def setUp(self):
+        self.url_namespace = 'api:order-product'
+
+    @classmethod
+    def setUpTestData(cls):
+        super(OrderProductViewDatabaseQueriesTest, cls).setUpTestData()
+        cls.order = Order.objects.create(user=cls.user,
+                                         total_price=0)
+        cls.product = Product.objects.first()
+        cls.op = OrderProduct.objects.create(order=cls.order,
+                                             product=cls.product,
+                                             customization=cls.product.items[0],
+                                             price=cls.product.price)
+
+    def test_with_non_waiting_order(self):
+        self.login(token=self.user.auth_token.key)
+        self.order.status = 'p'
+        self.order.save()
+
+        with self.assertNumQueries(2):
+            """
+            It should be done with 2 queries:
+            user authentication and find OrderProduct object.
+            """
+            self.client.patch(reverse(self.url_namespace, args=(self.order.id, self.product.id)), {
+                'customization': self.product.items[1]})
+
+    def test_update(self):
+        self.order.status = 'w'
+        self.order.save()
+        self.login(token=self.user.auth_token.key)
+
+        with self.assertNumQueries(3):
+            """
+            It should be done with 3 queries:
+            user authentication and find OrderProduct object.
+            update object.
+            """
+            self.client.patch(reverse(self.url_namespace, args=(self.order.id, self.product.id)), {
+                'customization': self.product.items[1]})

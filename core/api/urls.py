@@ -11,5 +11,8 @@ urlpatterns = [
     url(r'^accounts/login/$', views.login, name='login'),
     url(r'^orders/$', views.OrderListCreateView.as_view(), name='orders'),
     url(r'^orders/(?P<order_id>[\d]+)/$', views.OrderView.as_view(), name='order'),
+    url(r'^orders/(?P<order_id>[\d]+)/product/(?P<product_id>[\d]+)/$',
+        views.OrderProductView.as_view(),
+        name='order-product'),
     url(r'^orders/cart/$', views.CartView.as_view(), name='cart'),
 ]

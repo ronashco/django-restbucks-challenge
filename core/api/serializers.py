@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from core.products.models import Product
-from core.orders.models import Cart, Order, STATUS
+from core.orders.models import Cart, Order, OrderProduct
 
 User = get_user_model()
 
@@ -153,5 +153,26 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance.status != 'w':
+            raise serializers.ValidationError("You can only change waiting orders")
+        return attrs
+
+
+class OrderProductSerializer(serializers.ModelSerializer):
+    """
+    We use it for update/delete a order's product (product customization),
+    Users can edit a waiting order (order object with w status value).
+    We divided order modification to 2 parts:
+    the first one for general order information (e.g location),
+    and the second one for either update products customization or fully remove it
+    from the order, this serializer handles the second part.
+    """
+    class Meta:
+        model = OrderProduct
+        fields = ('customization',)
+
+    def validate(self, attrs):
+        if self.instance.order.status != 'w':
+            #  users can update a product if and only if
+            # it belongs to a waiting order.
             raise serializers.ValidationError("You can only change waiting orders")
         return attrs

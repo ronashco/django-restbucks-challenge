@@ -1,9 +1,7 @@
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, ListCreateAPIView,
-    RetrieveUpdateDestroyAPIView
-)
+from django.http import Http404
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -11,11 +9,13 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from core.products.models import Product
 from core.orders import utils
-from core.orders.models import Cart, CartApiModel, Order, OrderProductApiModel
+from core.orders.models import (
+    Cart, CartApiModel, Order, OrderProductApiModel, OrderProduct
+)
 from . import serializers
 
 
-class Menu(ListAPIView):
+class Menu(generics.ListAPIView):
     """
     Return a list of all existing products.
     """
@@ -59,7 +59,8 @@ def login(request):
         return Response('Invalid credentials.', status=status.HTTP_400_BAD_REQUEST)
 
 
-class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
+class CartView(generics.RetrieveAPIView, generics.CreateAPIView,
+               generics.DestroyAPIView):
     """
     get:
     Return user cart.
@@ -102,7 +103,7 @@ class CartView(RetrieveAPIView, CreateAPIView, DestroyAPIView):
         return Response(status=status.HTTP_201_CREATED, headers=headers)
 
 
-class OrderListCreateView(ListCreateAPIView):
+class OrderListCreateView(generics.ListCreateAPIView):
     """
     get:
     Return all existing user's orders.
@@ -131,7 +132,7 @@ class OrderListCreateView(ListCreateAPIView):
         serializer.save(total_price=total_price)
 
 
-class OrderView(RetrieveUpdateDestroyAPIView):
+class OrderView(generics.RetrieveUpdateDestroyAPIView):
     """
     get:
     Return order data with associated products.
@@ -169,3 +170,33 @@ class OrderView(RetrieveUpdateDestroyAPIView):
                                      item=op.customization,
                                      id_=op.product.id)
                 for op in order_products_query_set]
+
+
+class OrderProductView(generics.DestroyAPIView, generics.UpdateAPIView):
+    """
+    patch:
+    Update order's product customization.
+
+    delete:
+    Remove product from order.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.OrderProductSerializer
+
+    def get_object(self):
+        kwargs = dict(order__user=self.request.user,
+                      product_id=self.kwargs['product_id'],
+                      order_id=self.kwargs['order_id'])
+
+        related_objects = ['order', 'product']
+
+        if self.request.method == 'DELETE':
+            kwargs.update({'order__status': 'w'})
+
+        return get_object_or_404(OrderProduct.objects.select_related(*related_objects),
+                                 **kwargs)
+
+    def perform_destroy(self, instance):
+        instance.order.total_price -= instance.product.price
+        instance.order.save()
+        instance.delete()

@@ -314,3 +314,38 @@ class OrderSerializerTest(TestCase):
         serializer = serializers.OrderSerializer(instance=order, data={'location': 'i'}, partial=True)
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
+
+
+class OrderProductSerializerTest(TestCase):
+    """
+    Test core.api.serializer.OrderProductSerializer.
+    """
+    fixtures = ['products']
+
+    def setUp(self):
+        self.serializer_class = serializers.OrderProductSerializer
+
+    def test_fields(self):
+        self.assertEqual(
+            set(self.serializer_class().fields), {'customization'}
+        )
+
+    def test_validation(self):
+        """
+        Make sure serializer prevents update objects with non waiting order.
+        """
+        user = User.objects.create_user(email='foo@emal.com',
+                                        username='foo@emal.com',
+                                        password='abc123456789')
+        order = Order.objects.create(user=user, total_price=0, status='r')
+        product = Product.objects.first()
+        op = OrderProduct.objects.create(order=order,
+                                         price=product.price,
+                                         product=product,
+                                         customization=product.items[0])
+        new_product = Product.objects.get(title='Tea')
+        s = self.serializer_class(instance=op, data={'product': new_product,
+                                                     'customization': product.items[1]})
+
+        with self.assertRaises(ValidationError):
+            s.is_valid(raise_exception=True)

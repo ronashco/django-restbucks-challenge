@@ -253,7 +253,6 @@ class OrdersTest(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
         )
 
 
-@tag('future')
 class ChangeOrderProduct(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
     def test_can_change_product(self):
         self.login(token=self.user.auth_token.key)
@@ -283,9 +282,9 @@ class ChangeOrderProduct(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
 
         self.client.delete('%sproduct/1/' % order['url'])
 
-        orders = self.client.get(order['url']).json()[0]
+        orders = self.client.get(order['url']).json()
 
-        self.assertEqual(orders['total_price'], 1)
+        self.assertEqual(orders['total_price'], 2)
         self.assertEqual(1, len(orders['products']))
 
         #  make sure product was removed after remove all product.
