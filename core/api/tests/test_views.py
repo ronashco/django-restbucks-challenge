@@ -135,10 +135,13 @@ class LoginTest(APITestCase):
                                              'password': self.user_data['password']})
 
 
-class TestCartListView(APITestCase, AuthTokenCredentialsMixin):
+class BaseCartViewTest(APITestCase, AuthTokenCredentialsMixin):
     """
     Make sure core.api.views.CartListView works well.
     """
+    url = reverse('api:cart')
+    fixtures = ['products']
+
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user(
@@ -146,9 +149,7 @@ class TestCartListView(APITestCase, AuthTokenCredentialsMixin):
             email='m@email.com',
             password='Abc123456789',
         )
-
-    def setUp(self):
-        self.url = reverse('api:cart')
+        cls.product = Product.objects.first()
 
     def test_url(self):
         """Make sure url binds to correct view."""
@@ -175,63 +176,33 @@ class TestCartListView(APITestCase, AuthTokenCredentialsMixin):
             response['Content-type'], 'application/json'
         )
 
-    def test_database_queries(self):
-        """
-        Make sure view executes 2 database queries,
-        the first one for user authentication and the second one for fetch cart items.
-        """
-        self.login(self.user.auth_token.key)
-        with self.assertNumQueries(2):
-            self.client.get(self.url)
+    def test_db_queries_with_unauthorized_users(self):
+        with self.assertNumQueries(0):
+            self.client.post(self.url)
 
 
-class BaseCartTest(APITestCase, AuthTokenCredentialsMixin):
-    fixtures = ['products']
-
-    def setUp(self):
-        self.url = reverse('api:cart')
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = User.objects.create_user(
-            username='m@email.com',
-            email='m@email.com',
-            password='Abc123456789',
-        )
-
-        cls.product = Product.objects.first()
-
-
-class CartTest(BaseCartTest):
+class CreateCartTest(BaseCartViewTest):
     """
-    Make sure core.api.views.Cart works well.
+    Test core.api.CartView with POST requests.
     """
-
-    def test_url(self):
-        self.login(self.user.auth_token.key)
-        post_response = self.client.post(self.url)
-        self.assertEqual(post_response.resolver_match.func.__name__,
-                         views.CartView.as_view().__name__)
-
-        delete_response = self.client.delete(self.url)
-        self.assertEqual(delete_response.resolver_match.func.__name__,
-                         views.CartView.as_view().__name__)
-
-    def test_authentication_is_required(self):
-        response = self.client.post(self.url)
-        self.assertEqual(response.status_code, 401)
 
     def test_add_with_invalid_data(self):
+        """
+         Make sure view prevents invalid requests.
+        """
         self.login(token=self.user.auth_token.key)
 
         # request with invalid product data
-        response = self.client.post(self.url, data={'product': 1234, 'customization': 'invalid option'})
+        data = {'product': 1234, 'customization': 'invalid option'}
+        response = self.client.post(self.url, data=data)
         self.assertEqual(response.status_code, 400)
 
         # request with no data
         self.assertEqual(
             self.client.post(self.url).status_code, 400
         )
+
+        self.assertEqual(0, Cart.objects.count())
 
     def test_add_to_cart(self):
         self.login(token=self.user.auth_token.key)
@@ -246,32 +217,7 @@ class CartTest(BaseCartTest):
             1, Cart.objects.count()
         )
 
-    def test_remove_from_cart(self):
-        self.login(token=self.user.auth_token.key)
-
-        self.client.post(self.url, data={'product': self.product.id,
-                                         'customization': self.product.items[0]})
-
-        response = self.client.delete(self.url, data={'product': self.product.id})
-        self.assertEqual(
-            response.status_code, 204
-        )
-
-        self.assertEqual(0, Cart.objects.count())
-
-
-class CartViewDatabaseQueriesTest(BaseCartTest):
-    """
-    Make sure database queries are in the control.
-    In every protected url (urls that need user authentication) we need
-    a database query to user authentication.
-    """
-    def test_with_unauthorized_users(self):
-        with self.assertNumQueries(0):
-            self.client.post(self.url)
-
-    @skip
-    def test_with_invalid_product_data(self):
+    def test_db_with_invalid_product_data(self):
         data = {'product': 123456, 'customization': 'sth'}
         with self.assertNumQueries(2):
             # We need to recognize user and validate product,
@@ -279,21 +225,6 @@ class CartViewDatabaseQueriesTest(BaseCartTest):
             self.login(token=self.user.auth_token.key)
 
             self.client.post(self.url, data=data)
-
-    @skip
-    def test_remove(self):
-        data = {'product': self.product.id}
-        Cart.objects.create(product=self.product,
-                            user=self.user,
-                            customization=self.product.items[0])
-
-        with self.assertNumQueries(3):
-            # It should done with 3 queries:
-            # 1 - user authentication
-            # 2 - find
-            # 3 - delete cart object
-            self.login(token=self.user.auth_token.key)
-            self.client.delete(self.url, data=data)
 
     @skip
     def test_with_valid_product_data(self):
@@ -310,11 +241,41 @@ class CartViewDatabaseQueriesTest(BaseCartTest):
             self.client.post(self.url, data=data)
 
 
-class BaseOrderTest(APITestCase, AuthTokenCredentialsMixin):
-    fixtures = ['products']
+class ModifyCartTest(BaseCartViewTest):
+    """
+    Test core.api.CartView with PATCH/DELETE requests.
+    """
+    def test_remove_from_cart(self):
+        self.login(token=self.user.auth_token.key)
 
-    def setUp(self):
-        self.url = reverse('api:orders')
+        self.client.post(self.url, data={'product': self.product.id,
+                                         'customization': self.product.items[0]})
+
+        response = self.client.delete(self.url, data={'product': self.product.id})
+        self.assertEqual(
+            response.status_code, 204
+        )
+
+        self.assertEqual(0, Cart.objects.count())
+
+    def test_deletion_db_queries(self):
+        data = {'product': self.product.id}
+        Cart.objects.create(product=self.product,
+                            user=self.user,
+                            customization=self.product.items[0])
+
+        with self.assertNumQueries(3):
+            # It should done with 3 queries:
+            # 1 - user authentication
+            # 2 - find
+            # 3 - delete cart object
+            self.login(token=self.user.auth_token.key)
+            self.client.delete(self.url, data=data)
+
+
+class BaseOrderListCreateViewTest(APITestCase, AuthTokenCredentialsMixin):
+    fixtures = ['products']
+    url = reverse('api:orders')
 
     @classmethod
     def setUpTestData(cls):
@@ -324,44 +285,41 @@ class BaseOrderTest(APITestCase, AuthTokenCredentialsMixin):
             password='Abc123456789',
         )
 
-
-class OrderListViewTest(BaseOrderTest):
-    """
-    Test core.orders.views.OrderListCreateView with get requests.
-    """
-    def test_url(self):
-        response = self.client.get(self.url)
-        self.assertEqual(
-            response.resolver_match.func.__name__, views.OrderListCreateView.as_view().__name__
-        )
-
     def test_authentication(self):
         """Make sure authentication is required."""
         self.assertEqual(
             401, self.client.get(self.url).status_code
         )
-        self.login(token=self.user.auth_token.key)  # send login auth credentials with request.
+        self.login(token=self.user.auth_token.key)  # send login auth credentials.
         self.assertEqual(
             self.client.get(self.url).status_code, 200
         )
 
+    def test_url(self):
+        """
+        Make sure url connected to related view.
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.resolver_match.func.__name__,
+            views.OrderListCreateView.as_view().__name__
+        )
+
+
+class OrderListViewTest(BaseOrderListCreateViewTest):
+    """
+    Test core.orders.views.OrderListCreateView with GET requests.
+    """
     def test_executed_queries(self):
         with self.assertNumQueries(2):
             self.login(token=self.user.auth_token.key)
             self.client.get(self.url)
 
 
-class OrderCreateViewTest(BaseOrderTest):
+class OrderCreateViewTest(BaseOrderListCreateViewTest):
     """
-    Because The creation/retrieve view are the same classes,
-    we wont to test authentication.
+    Test core.api.OrderListCreateView with POST requests.
     """
-    def test_url(self):
-        response = self.client.post(self.url)
-        self.assertEqual(
-            response.resolver_match.func.__name__, views.OrderListCreateView.as_view().__name__
-        )
-
     def test_validation(self):
         self.login(token=self.user.auth_token.key)
 
@@ -430,18 +388,25 @@ class OrderCreateViewTest(BaseOrderTest):
             self.client.post(self.url)
 
 
-class RetrieveDetailOrderTest(BaseOrderTest):
-    def setUp(self):
-        self.url_namespace = 'api:order'
+class BaseOrderViewTest(APITestCase, AuthTokenCredentialsMixin):
+
+    fixtures = ['products']
+    url_namespace = 'api:order'
 
     @classmethod
     def setUpTestData(cls):
-        super(RetrieveDetailOrderTest, cls).setUpTestData()
-        # cls.user = super(RetrieveDetailOrderTest, cls).user
+        cls.user = User.objects.create_user(
+            email='foo@email.com',
+            username='foo@email.com',
+            password='Abc123456789',
+        )
         cls.order = Order.objects.create(
             user=cls.user,
             total_price=0
         )
+
+    def url(self, *args):
+        return reverse(self.url_namespace, args=args)
 
     def test_authentication(self):
         """
@@ -455,7 +420,7 @@ class RetrieveDetailOrderTest(BaseOrderTest):
 
     def test_bound_view(self):
         self.login(token=self.user.auth_token.key)
-        response = self.client.get(reverse(self.url_namespace, args=(self.order.id,)))
+        response = self.client.get(self.url(self.order.id))
         self.assertEqual(
             response.resolver_match.func.__name__,
             views.OrderView.as_view().__name__
@@ -466,13 +431,16 @@ class RetrieveDetailOrderTest(BaseOrderTest):
         Make sure url regular expression wrote properly.
         """
         self.login(token=self.user.auth_token.key)
-        response = self.client.get(reverse(self.url_namespace, args=(self.order.id,)))
+        response = self.client.get(self.url(self.order.id))
         self.assertEqual(
             response.status_code, 200
         )
 
-        response = self.client.get(reverse(self.url_namespace, args=('a' + str(self.order.id),)))
+        response = self.client.get(self.url('a' + str(self.order.id)))
         self.assertEqual(response.status_code, 404)
+
+
+class RetrieveDetailOrderTest(BaseOrderViewTest):
 
     def test_user_has_access_his_orders_only(self):
         """
@@ -484,26 +452,23 @@ class RetrieveDetailOrderTest(BaseOrderTest):
                                         password='abc123456789')
 
         self.login(token=user.auth_token.key)
-        response = self.client.get(reverse(self.url_namespace, args=(self.order.id,)))
+        response = self.client.get(self.url(self.order.id))
         self.assertEqual(
             response.status_code, 404
         )
 
 
-class RetrieveDetailOrderDatabaseQueriesTest(BaseOrderTest):
+class RetrieveDetailOrderDatabaseQueriesTest(BaseOrderViewTest):
     """
     Test number of database queries in difference situations
     for fetch an order object and related products.
     """
-    def setUp(self):
-        self.url_namespace = 'api:order'
-
     def test_with_anonymous_user(self):
         """
         Check database queries for users with no auth credentials.
         """
         with self.assertNumQueries(0):
-            self.client.get(reverse(self.url_namespace, args=(1,)))
+            self.client.get(self.url(1))
 
     def test_with_unrelated_user(self):
         """
@@ -518,7 +483,7 @@ class RetrieveDetailOrderDatabaseQueriesTest(BaseOrderTest):
             It should be done with 2 queries,
             The first one for user authentication and the second one for find order.
             """
-            self.client.get(reverse(self.url_namespace, args=(2,)))
+            self.client.get(self.url(2))
 
     def test_retrieve(self):
         """
@@ -558,24 +523,13 @@ class RetrieveDetailOrderDatabaseQueriesTest(BaseOrderTest):
             The first one for check authentication,
             and the next three ones for fetch order and related products.
             """
-            self.client.get(reverse(self.url_namespace, args=(order.id,)))
+            self.client.get(self.url(order.id))
 
 
-class OrderUpdateViewTest(BaseOrderTest):
+class OrderUpdateViewTest(BaseOrderViewTest):
     """
     Test OrderView with put/patch.
     """
-
-    def setUp(self):
-        self.url_namespace = 'api:order'
-
-    @classmethod
-    def setUpTestData(cls):
-        super(OrderUpdateViewTest, cls).setUpTestData()
-        cls.order = Order.objects.create(
-            total_price=0,
-            user=cls.user
-        )
 
     def test_users_can_update_only_their_orders(self):
         """
@@ -585,7 +539,7 @@ class OrderUpdateViewTest(BaseOrderTest):
                                         username='new_user@email.com',
                                         password='abc123456789')
         self.login(token=user.auth_token.key)
-        response = self.client.patch(reverse(self.url_namespace, args=(self.order.id,)))
+        response = self.client.patch(self.login(self.order.id))
         self.assertEqual(
             response.status_code, 404
         )
@@ -596,8 +550,7 @@ class OrderUpdateViewTest(BaseOrderTest):
         """
         self.login(self.user.auth_token.key)
         order = Order.objects.create(user=self.user, total_price=0, status='p')
-        response = self.client.patch(reverse(self.url_namespace, args=(order.id,)),
-                                     {'location': 'a'})
+        response = self.client.patch(self.url(order.id), {'location': 'a'})
         self.assertEqual(
             response.status_code, 400
         )
@@ -616,7 +569,7 @@ class OrderUpdateViewTest(BaseOrderTest):
                 'status': 'sth',
                 'user_id': 4,
                 'total_price': '134'}
-        response = self.client.patch(reverse(self.url_namespace, args=(order.id,)), data)
+        response = self.client.patch(self.url(order.id), data)
 
         updated_order = Order.objects.get(id=order.id)
 
@@ -647,8 +600,7 @@ class OrderUpdateViewTest(BaseOrderTest):
         order = Order.objects.create(total_price=0, user=self.user, status='r')
 
         with self.assertNumQueries(2):
-            self.client.patch(reverse(self.url_namespace, args=(order.id, )),
-                              {'location': 'a'})
+            self.client.patch(self.url(order.id), {'location': 'a'})
 
     def test_update_waiting_order_database_queries(self):
         """
@@ -657,17 +609,13 @@ class OrderUpdateViewTest(BaseOrderTest):
         self.login(self.user.auth_token.key)
 
         with self.assertNumQueries(3):
-            self.client.patch(reverse(self.url_namespace, args=(self.order.id,)),
-                              {'location': 'a'})
+            self.client.patch(self.url(self.order.id), {'location': 'a'})
 
 
-class OrderDeleteViewTest(BaseOrderTest):
+class OrderDeleteViewTest(BaseOrderViewTest):
     """
     Make core.api.views.OrderView works with DELETE requests.
     """
-    def setUp(self):
-        self.url_namespace = 'api:order'
-
     def test_for_non_waiting_order(self):
         order = Order.objects.create(
             user=self.user,
@@ -677,7 +625,7 @@ class OrderDeleteViewTest(BaseOrderTest):
 
         self.login(token=self.user.auth_token.key)
 
-        response = self.client.delete(reverse(self.url_namespace, args=(order.id,)))
+        response = self.client.delete(self.url(order.id))
         self.assertEqual(
             response.status_code, 404
         )
@@ -694,7 +642,7 @@ class OrderDeleteViewTest(BaseOrderTest):
 
         self.login(token=self.user.auth_token.key)
 
-        response = self.client.delete(reverse(self.url_namespace, args=(order.id,)))
+        response = self.client.delete(self.url(order.id))
         self.assertEqual(
             response.status_code, 204
         )
@@ -719,7 +667,7 @@ class OrderDeleteViewTest(BaseOrderTest):
             - delete order
             - deleted related products
             """
-            self.client.delete(reverse(self.url_namespace, args=(o1.id,)))
+            self.client.delete(self.url(o1.id))
 
         o2 = Order.objects.create(
             user=self.user,
@@ -734,16 +682,26 @@ class OrderDeleteViewTest(BaseOrderTest):
             - user authentication
             - find order
             """
-            self.client.delete(reverse(self.url_namespace, args=(o2.id,)))
+            self.client.delete(self.url(o2.id))
 
 
-class OrderProductUpdateViewTest(BaseOrderTest):
-    def setUp(self):
-        self.url_namespace = 'api:order-product'
+class BaseOrderProductViewTest(APITestCase, AuthTokenCredentialsMixin):
+    """
+    core.api.OrderProductView handles Patch/Delete Http methods.
+    We want to test methods in different test classes.
+    This class contains some general cases and helper method.
+    """
+
+    fixtures = ['products']
+    url_namespace = 'api:order-product'
 
     @classmethod
     def setUpTestData(cls):
-        super(OrderProductUpdateViewTest, cls).setUpTestData()
+        cls.user = User.objects.create_user(
+            email='foo@email.com',
+            username='foo@email.com',
+            password='Abc123456789',
+        )
 
         cls.product = Product.objects.first()
         cls.order = Order.objects.create(
@@ -758,26 +716,31 @@ class OrderProductUpdateViewTest(BaseOrderTest):
             price=cls.product.price
         )
 
-    def test_url(self):
-        """
-        Make sure url connected to view properly.
-        """
-        response = self.client.patch(reverse(self.url_namespace, args=(1, 1)))
-        self.assertEqual(
-            response.resolver_match.func.__name__,
-            views.OrderProductView.as_view().__name__
-        )
-
     def test_authentication(self):
         """
         Make sure authentication is required.
         """
 
-        response = self.client.patch(reverse(self.url_namespace,
-                                             args=(self.order.id, self.product.id)))
+        response = self.client.patch(self.url(self.order.id, self.product.id))
         self.assertEqual(
             response.status_code, 401
         )
+
+    def test_url(self):
+        """
+        Make sure url connected to view properly.
+        """
+        response = self.client.patch(self.url(1, 1))
+        self.assertEqual(
+            response.resolver_match.func.__name__,
+            views.OrderProductView.as_view().__name__
+        )
+
+    def url(self, *args):
+        return reverse(self.url_namespace, args=args)
+
+
+class OrderProductUpdateViewTest(BaseOrderProductViewTest):
 
     def test_update(self):
         """
@@ -788,8 +751,8 @@ class OrderProductUpdateViewTest(BaseOrderTest):
 
         self.login(token=self.user.auth_token.key)
 
-        url = reverse(self.url_namespace, args=(self.order.id, self.product.id))
-        response = self.client.patch(url, {'customization': self.product.items[1]})
+        response = self.client.patch(self.url(self.order.id, self.product.id),
+                                     {'customization': self.product.items[1]})
 
         self.assertEqual(
             response.status_code, 200
@@ -810,7 +773,7 @@ class OrderProductUpdateViewTest(BaseOrderTest):
 
         self.login(token=self.user.auth_token.key)
 
-        response = self.client.patch(reverse(self.url_namespace, args=(self.order.id, self.product.id)),
+        response = self.client.patch(self.url(self.order.id, self.product.id),
                                      {'customization': self.product.items[1]})
         # The view should prevents update orders with non waiting status.
         self.assertEqual(
@@ -823,37 +786,18 @@ class OrderProductUpdateViewTest(BaseOrderTest):
         )
 
 
-class OrderProductDeleteViewTest(BaseOrderTest):
-    def setUp(self):
-        self.url_namespace = 'api:order-product'
-
-    @classmethod
-    def setUpTestData(cls):
-        super(OrderProductDeleteViewTest, cls).setUpTestData()
-        cls.product = Product.objects.first()
-        cls.order = Order.objects.create(
-            user=cls.user,
-            total_price=0
-        )
-
-        cls.op = OrderProduct.objects.create(order=cls.order,
-                                             product=cls.product,
-                                             customization=cls.product.items[0],
-                                             price=cls.product.price)
-
+class OrderProductDeleteViewTest(BaseOrderProductViewTest):
     def test_response(self):
         self.login(token=self.user.auth_token.key)
 
-        response = self.client.delete(reverse(self.url_namespace,
-                                              args=(self.order.id, self.product.id)))
+        response = self.client.delete(self.url(self.order.id, self.product.id))
 
         self.assertEqual(response.status_code, 204)
 
     def test_deletion(self):
         self.login(token=self.user.auth_token.key)
 
-        self.client.delete(reverse(self.url_namespace,
-                                   args=(self.order.id, self.product.id)))
+        self.client.delete(self.url(self.order.id, self.product.id))
 
         self.assertEqual(
             OrderProduct.objects.count(), 0
@@ -868,8 +812,7 @@ class OrderProductDeleteViewTest(BaseOrderTest):
             status='p'
         )
 
-        response = self.client.delete(reverse(self.url_namespace,
-                                              args=(order.id, self.product.id)))
+        response = self.client.delete(self.login(order.id, self.product.id))
 
         self.assertEqual(
             response.status_code, 404
@@ -900,7 +843,7 @@ class OrderProductDeleteViewTest(BaseOrderTest):
             order=order,
             price=p2.price
         )
-        self.client.delete(reverse('api:order-product', args=(order.id, p1.id)))
+        self.client.delete(self.url(order.id, p1.id))
 
         self.assertEqual(
             Order.objects.get(id=order.id).total_price, 2
@@ -918,25 +861,10 @@ class OrderProductDeleteViewTest(BaseOrderTest):
             - update Order.total price
             - core.orders.models.remove_empty_orders receiver.
             """
-            self.client.delete(reverse(self.url_namespace,
-                                       args=(self.order.id, self.product.id)))
+            self.client.delete(self.url(self.order.id, self.product.id))
 
 
-class OrderProductViewDatabaseQueriesTest(BaseOrderTest):
-    def setUp(self):
-        self.url_namespace = 'api:order-product'
-
-    @classmethod
-    def setUpTestData(cls):
-        super(OrderProductViewDatabaseQueriesTest, cls).setUpTestData()
-        cls.order = Order.objects.create(user=cls.user,
-                                         total_price=0)
-        cls.product = Product.objects.first()
-        cls.op = OrderProduct.objects.create(order=cls.order,
-                                             product=cls.product,
-                                             customization=cls.product.items[0],
-                                             price=cls.product.price)
-
+class OrderProductViewDatabaseQueriesTest(BaseOrderProductViewTest):
     def test_with_non_waiting_order(self):
         self.login(token=self.user.auth_token.key)
         self.order.status = 'p'
@@ -947,7 +875,7 @@ class OrderProductViewDatabaseQueriesTest(BaseOrderTest):
             It should be done with 2 queries:
             user authentication and find OrderProduct object.
             """
-            self.client.patch(reverse(self.url_namespace, args=(self.order.id, self.product.id)), {
+            self.client.patch(self.url(self.order.id, self.product.id), {
                 'customization': self.product.items[1]})
 
     def test_update(self):
@@ -961,5 +889,5 @@ class OrderProductViewDatabaseQueriesTest(BaseOrderTest):
             user authentication and find OrderProduct object.
             update object.
             """
-            self.client.patch(reverse(self.url_namespace, args=(self.order.id, self.product.id)), {
+            self.client.patch(self.url(self.order.id, self.product.id), {
                 'customization': self.product.items[1]})
