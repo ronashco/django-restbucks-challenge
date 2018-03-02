@@ -1,6 +1,6 @@
-from unittest import skip
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
+from django.test import tag
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 from core.orders.models import Cart, Order, OrderProduct
@@ -226,7 +226,7 @@ class CreateCartTest(BaseCartViewTest):
 
             self.client.post(self.url, data=data)
 
-    @skip
+    @tag('unresolved')
     def test_with_valid_product_data(self):
         data = {
             'product': self.product.id,
