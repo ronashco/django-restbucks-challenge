@@ -845,6 +845,10 @@ class OrderProductDeleteViewTest(BaseOrderProductViewTest):
         )
         self.client.delete(self.url(order.id, p1.id))
 
+        # make sure price updates with stored price, not original product.
+        p1.price = 100
+        p1.save()
+
         self.assertEqual(
             Order.objects.get(id=order.id).total_price, 2
         )

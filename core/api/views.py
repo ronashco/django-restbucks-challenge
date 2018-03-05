@@ -197,6 +197,6 @@ class OrderProductView(generics.DestroyAPIView, generics.UpdateAPIView):
                                  **kwargs)
 
     def perform_destroy(self, instance):
-        instance.order.total_price -= instance.product.price
+        instance.order.total_price -= instance.price
         instance.order.save()
         instance.delete()
