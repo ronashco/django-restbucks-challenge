@@ -64,12 +64,12 @@ class OrderProduct(models.Model):
         if self.product.option is None and self.customization is not None:
             """We can customize a product in an order only if it has option value"""
 
-            raise ValidationError("The product (%s) doesnt support customization." % self.product)
+            raise ValidationError("The product does not support customization.")
 
         elif self.product.option is not None and self.customization is None:
             """If the product has non-null option, the customization is required."""
 
-            raise ValidationError("The product (%s) does not support customization." % self.product)
+            raise ValidationError("The product supports customization. The customization is required")
         elif self.customization is not None and self.customization not in self.product.items:
             """Customization must be in product.items"""
 
@@ -102,14 +102,11 @@ class Cart(models.Model):
 
         if self.product.option is None and self.customization is not None:
             raise ValidationError(
-                {"customization": "The product (%s) does not support customization"
-                                  " however customization field has %s value" %
-                                  (self.product, self.customization)}
+                {"customization": "The product does not support customization"}
             )
         elif self.customization is None and self.product.option is not None:
             raise ValidationError(
-                {"customization": "Customization can not be null"
-                                  " the product (%s) contains option" % self.product}
+                {"customization": "The customization can not be null"}
             )
         elif self.customization is not None and self.customization not in self.product.items:
             raise ValidationError(
