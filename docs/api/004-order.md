@@ -186,10 +186,10 @@ Clients can modify/delete product(s) of an waiting order.
     
     If client tries to modify a product with **null** option field.
     * **Status code** 400 BAD REQUEST
-    * **Content** `{"product": "The product does not support customization"}`
+    * **Content** `{"customization": "The product does not support customization"}`
     
     OR
     
     If client doesnt send customization for customizable product.
     * **Status code** 400 BAD REQUEST
-    * **Content** `{"product": "The product supports customization. The customization is required"}`
+    * **Content** `{"customization": "The product supports customization. The customization is required"}`

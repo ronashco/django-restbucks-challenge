@@ -273,6 +273,26 @@ class ChangeOrderProduct(BaseOrderFunctionalTest, AuthTokenCredentialsMixin):
             'id': 1
         })
 
+    def test_with_non_customizable_product(self):
+        self.login(token=self.user.auth_token.key)
+        self.add_to_card(product=4)
+        order = self.client.post('/api/orders/').json()  # submit order.
+        response = self.client.patch('/api/orders/%s/product/4/' % order['id'],
+                                     data={'customization': 'semi'})
+        self.assertEqual(
+            response.json(), {'customization': ['The product does not support customization.']}
+        )
+
+    def test_empty_customization_field(self):
+        self.login(token=self.user.auth_token.key)
+        self.add_to_card(product=1, customization='skim')
+        order = self.client.post('/api/orders/').json()  # submit order.
+        response = self.client.patch('/api/orders/%s/product/1/' % order['id'])
+        self.assertEqual(
+            response.json(),
+            {'customization': ['The product supports customization. The customization is required']}
+        )
+
     def test_remove_product(self):
         self.login(token=self.user.auth_token.key)
 

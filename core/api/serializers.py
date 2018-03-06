@@ -175,4 +175,17 @@ class OrderProductSerializer(serializers.ModelSerializer):
             #  users can update a product if and only if
             # it belongs to a waiting order.
             raise serializers.ValidationError("You can only change waiting orders")
+
+        #  run model level validation.
+        model = OrderProduct(
+            product=self.instance.product,
+            order=self.instance.order,
+            customization=attrs.get('customization'),
+            price=self.instance.price
+        )
+        try:
+            model.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({'customization': e.messages})
+
         return attrs
