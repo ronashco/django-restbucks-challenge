@@ -4,6 +4,7 @@ branch = False
 omit =
     core/*/tests/*
     core/*/tests.py
+    core/*/apps.py
     core/*/migrations/*
     core/*/fixtures/*
 
