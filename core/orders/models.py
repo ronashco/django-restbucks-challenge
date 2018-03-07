@@ -2,7 +2,8 @@ from django.db import models, connection
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.dispatch import receiver
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
+from django.core.mail import EmailMessage
 from core.products.models import Product
 
 User = get_user_model()
@@ -160,3 +161,24 @@ def remove_empty_orders(sender, **kwargs):
                                        WHERE order_id = {order_id}) = 0;
             """.format(order_id=kwargs['instance'].order_id)
         )
+
+
+@receiver(post_save, sender=Order)
+def change_status(**kwargs):
+    """
+    We want to notify users after every status modification.
+    """
+    if not kwargs['created'] and kwargs['instance'].status != 'w':
+        message = {
+            'w': "Your order is submitted.It's waiting for confirmation",
+            'p': "We are preparing your order",
+            'r': "Your order is ready.",
+            'd': "Your order delivered.",
+        }
+
+        try:
+            mail = EmailMessage(to=[kwargs['instance'].user.email],
+                                body=message[kwargs['instance'].status])
+            mail.send()
+        except KeyError:
+            pass

@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from core.orders.models import Cart, Order, OrderProduct
 from core.accounts.tests import AuthTokenCredentialsMixin
 from core.products.models import Product
+from django.core import mail
 from .. import views
 
 

@@ -15,3 +15,9 @@ DATABASES = {
         'PORT': '5432'
     }
 }
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'restbuckschallenge@gmail.com'
+EMAIL_HOST_PASSWORD = 'Abc123456789'
+EMAIL_PORT = 587

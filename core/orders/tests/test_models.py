@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from core.products.models import Product
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.core import mail
 from .. import models
 
 User = get_user_model()
@@ -111,6 +112,25 @@ class OrderModelTest(BaseOrderTest):
         self.assertEqual(
             order.location_label, 'Away'
         )
+
+    def test_send_email_signal(self):
+        """
+        Make sure notify email sent.
+        """
+        self.order.status = 'p'
+        self.order.save()
+        self.assertEqual(1, len(mail.outbox))
+
+        self.order.status = 'r'
+        self.order.save()
+        self.assertEqual(2, len(mail.outbox))
+
+        self.order.status = 'd'
+        self.order.save()
+        self.assertEqual(3, len(mail.outbox))
+
+        self.order.status = 'w'
+        self.order.save()
 
 
 class TestOrderProductModel(BaseOrderTest):
