@@ -1,7 +1,7 @@
 Restbucks coffee shop
 ----
 A simple rest api based on [Django framework](https://www.djangoproject.com). 
-You can find the scenario of project [here](https://github.com/ronashco/django-restbucks-challenge).
+You can see the scenario of project [here](https://github.com/ronashco/django-restbucks-challenge/blob/master/README.md).
 
 
 Project layout
@@ -19,4 +19,4 @@ Project layout
 
 - **/functional_tests** project's functional (acceptance) tests.
 
-- **/requirements**  contains project requirements, you can install requirements based on environment:
+- **/requirements**  contains project requirements, you can install requirements based on your environment:
