@@ -1,7 +1,7 @@
 **Fields**
 ----
-* **product**: id field in product data - see [menu](https://gitlab.com/mohammad_h73/restbucks/blob/master/docs/api/002-menu.md) api)  
-* **customization**: one of **items** in product data - see [menu](https://gitlab.com/mohammad_h73/restbucks/blob/master/docs/api/002-menu.md) api)  
+* **product**: id field in product data - see [menu](https://github.com/mohammadh73/django-restbucks-challenge/blob/master/docs/api/002-menu.md) api)  
+* **customization**: one of **items** in product data - see [menu](https://github.com/mohammadh73/django-restbucks-challenge/blob/master/docs/api/002-menu.md) api)  
 
 **Authentication**
 ----
@@ -25,7 +25,7 @@ If the client doesnt send request headers for protected urls, the response will 
 * **Status code** 401
 * **Content** `{"detail": "Authentication credentials were not provided."}`
  
-To fetch client's token see [authentication](https://gitlab.com/mohammad_h73/restbucks/blob/master/docs/api/001-authentication.md) document.
+To fetch client's token see [authentication](https://github.com/mohammadh73/django-restbucks-challenge/blob/master/docs/api/001-authentication.md) document.
 
 **Orders**
 ----
