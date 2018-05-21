@@ -1,0 +1,43 @@
+
+#login-container{
+    position: relative;
+    left: 500px;
+    top: 200px;
+}
+
+#email-field{
+    display: block;    
+}
+
+#password-field{
+    display: block;
+}
+
+#submit-button{
+    background-color: rgba(76, 76, 241, 0.657);
+    color: white;
+    text-align: center;
+    border-radius: 2px;
+    height: 30px;
+    width: 100px;
+    margin-top: 10px; 
+    margin-left: 75px;
+}
+
+#submit-button:hover{
+    cursor: pointer;
+    background-color: rgba(76, 76, 241, 0.657);
+    color: white;
+    text-align: center;
+    border-radius: 2px;
+    border: thick;
+    margin-top: 10px; 
+    margin-left: 75px;
+}
+
+#error-message{
+    visibility:hidden;
+    margin-top: 10px;
+    color: red;
+    font-size: 0.7em;
+}
