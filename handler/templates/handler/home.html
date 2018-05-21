@@ -8,17 +8,26 @@
 </head>
 
 <body>
-<div id="home-top-panel">
-    {% csrf_token %}
-    <a href="./logout">
-        <button id="logout-button">
-            خروج
-        </button>
-    </a>
-    <h2 style="margin-right:300px;">
-        به نام خدا، خوش آمدید
-    </h2>
-</div>
+    <div id="home-top-panel">
+        {% csrf_token %}
+        <a href="./logout">
+            <button id="logout-button">
+                خروج
+            </button>
+        </a>
+        <h2 style="margin-right:300px;">
+            به نام خدا، خوش آمدید
+        </h2>
+    </div>
+    <div id="home-bottom-panel">
+        <div class="home-bottom-box">
+            <p style="float: right;">از اینجا سفارش دهید</p>
+
+        </div>
+        <div class="home-bottom-box">
+            <p style="float: right;">از اینجا سفارش های خود را ببینید</p>
+        </div>
+    </div>
 </body>
 
 </html>

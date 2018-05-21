@@ -34,7 +34,7 @@ decorators = [login_required]
 @method_decorator(decorators, name='dispatch')
 class Home(TemplateView):
     def get(self, *args, **kwargs):
-        print("wwefjksdfn")
+        print(self.request.user.username);
         return render(self.request, 'handler/home.html')
 
 

@@ -50,6 +50,12 @@
     justify-content: space-around;
 }
 
+#home-bottom-panel{
+    height: 80%;
+    display: flex;
+    justify-content: center;
+}
+
 #logout-button{
     background-color: rgba(76, 76, 241, 0.657);
     color: white;
@@ -57,4 +63,12 @@
     width: 130px;
     margin-top:20px;    
     cursor: pointer;
+}
+
+
+.home-bottom-box{
+    border-style: dotted;
+    border-color: black;
+    height: 100%;
+    width: 50%;
 }
