@@ -1,0 +1,24 @@
+{%load static from staticfiles %}
+
+<html>
+
+<head>
+    <title> خانه </title>
+    <link rel="stylesheet" type="text/css" href="{% static 'general.css'%}">
+</head>
+
+<body>
+<div id="home-top-panel">
+    {% csrf_token %}
+    <a href="./logout">
+        <button id="logout-button">
+            خروج
+        </button>
+    </a>
+    <h2 style="margin-right:300px;">
+        به نام خدا، خوش آمدید
+    </h2>
+</div>
+</body>
+
+</html>

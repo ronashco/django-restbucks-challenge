@@ -5,6 +5,7 @@
 <head>
     <title> صفحه اصلی </title>
     <link rel="stylesheet" type="text/css" href="{% static 'general.css'%}">
+    <script type="text/javascript" src="{% static 'general.js'%}"></script>
 </head>
 <body>
 <form action="login" method="post">
@@ -24,9 +25,12 @@
         <input id="password-field" type="password" name="password" placeholder="enter password">
 
         </input>
-        <input type="submit" id="submit-button">
+        <input type="submit" id="submit-button" onclick="login()">
 
         </input>
+        <div id="error-message">
+            رمز یا ایمیل اشتباه است دوباره تلاش کنید
+        </div>
     </div>
 </form>
 </body>
