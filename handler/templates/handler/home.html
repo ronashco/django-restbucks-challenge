@@ -26,12 +26,55 @@
 
     <div class="home-bottom-box">
         <p style="float: right;">از اینجا سفارش های خود را ببینید</p>
+        <br/>
+        <br/>
+
+
+        <table width="100%" id="order-table" rules="all">
+            <th>order id</th>
+            <th>product</th>
+            <th>options</th>
+            <th>consume place</th>
+
+            <th>status</th>
+            <th>
+                cancel?
+            </th>
+            {{ orders.count }}
+            {% for order in orders %}
+            <tr>
+                <td>
+                    {{ order.id }}
+                </td>
+                <td>
+                    {{ order.product }}
+                </td>
+                <td>
+                    {{ order.option }}
+                </td>
+                <td>
+                    {{ order.consume_place }}
+                </td>
+                <td>
+                    {{ order.status }}
+                </td>
+                <td>
+                    <form action="deleteorder/{{order.id}}" method="get">
+                        <button id="cancel-order">
+                            cancel
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+
+        </table>
 
     </div>
     <div class="home-bottom-box">
         <p style="float: right;">از اینجا سفارش دهید</p>
         <br/>
-        <form id="add-order-bar"  action="addorder" method="post" style="margin-top:70px; margin-left:10px;">
+        <form id="add-order-bar" action="addorder" method="post" style="margin-top:70px; margin-left:10px;">
             {% csrf_token %}
             <select id="product-select" name="product-choice">
                 {% for product in products %}

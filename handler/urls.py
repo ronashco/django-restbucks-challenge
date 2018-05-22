@@ -1,5 +1,5 @@
 from django.conf.urls import include, url
-from .views import Index, Login, Home, Logout , AddOrder
+from .views import Index, Login, Home, Logout , AddOrder , DeleteOrder
 
 urlpatterns = [
     url(r'^$', Index.as_view()),
@@ -10,4 +10,6 @@ urlpatterns = [
     url(r'^home/$', Home.as_view()),
     url(r'^home/addorder', AddOrder.as_view()),
     url(r'^home/addorder/', AddOrder.as_view()),
+    url(r'^home/deleteorder/(?P<order_id>\d+)/$', DeleteOrder.as_view()),
+    url(r'^home/deleteorder/(?P<order_id>\d+)$', DeleteOrder.as_view()),
 ]
