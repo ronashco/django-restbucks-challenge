@@ -37,6 +37,7 @@ decorators = [login_required]
 
 @method_decorator(decorators, name='dispatch')
 class Home(TemplateView):
+
     def get(self, *args, **kwargs):
         template = loader.get_template('handler/home.html')
         context = {

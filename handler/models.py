@@ -6,6 +6,10 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import signals
 
+"""
+status of a order which can modify by admin
+"""
+
 
 class OrderStatus(models.Model):
     status = models.CharField(max_length=200)
@@ -14,11 +18,21 @@ class OrderStatus(models.Model):
         return self.status
 
 
+"""
+model of products that served in coffee shop
+"""
+
+
 class Product(models.Model):
     product = models.CharField(max_length=200)
 
     def __str__(self):
         return self.product
+
+
+"""
+model of places that a customer can eat his product
+"""
 
 
 class Place(models.Model):
@@ -37,6 +51,11 @@ class Order(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+"""
+this method sends email to owner of a order whenever a status for order changed
+"""
 
 
 @receiver(pre_save, sender=Order, dispatch_uid='status')
