@@ -8,27 +8,53 @@
 </head>
 
 <body>
-    <div id="home-top-panel">
-        {% csrf_token %}
-        <a href="./logout">
-            <button id="logout-button">
-                خروج
-            </button>
-        </a>
-        <h2 style="margin-right:300px;">
-            به نام خدا، خوش آمدید
-        </h2>
-    </div>
-    <div id="home-bottom-panel">
+<div id="home-top-panel">
 
-        <div class="home-bottom-box">
-            <p style="float: right;">از اینجا سفارش های خود را ببینید</p>
-        </div>
-        <div class="home-bottom-box">
-            <p style="float: right;">از اینجا سفارش دهید</p>
+    <a href="./logout">
+        <button id="logout-button">
+            خروج
+        </button>
+    </a>
+    <h2>
+        به نام خدا، خوش آمدید
+    </h2>
+    <h4>
+        {{username}} اسم شما
+    </h4>
+</div>
+<div id="home-bottom-panel">
 
-        </div>
+    <div class="home-bottom-box">
+        <p style="float: right;">از اینجا سفارش های خود را ببینید</p>
+
     </div>
+    <div class="home-bottom-box">
+        <p style="float: right;">از اینجا سفارش دهید</p>
+        <br/>
+        <form id="add-order-bar"  action="addorder" method="post" style="margin-top:70px; margin-left:10px;">
+            {% csrf_token %}
+            <select id="product-select" name="product-choice">
+                {% for product in products %}
+                <option value="{{product}}">
+                    {{ product }}
+                </option>
+                {% endfor %}
+            </select>
+            <select id="place-container" name="place-choice">
+                {% for place in places %}
+                <option value="{{place}}">
+                    {{ place }}
+                </option>
+                {% endfor %}
+            </select>
+            <input id="option-field" name="option" placeholder="enter your option">
+
+            </input>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+</div>
 </body>
 
 </html>

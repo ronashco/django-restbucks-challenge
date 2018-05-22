@@ -2,9 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-# Create your models here.
-
-
 class OrderStatus(models.Model):
     status = models.CharField(max_length=200)
 
@@ -19,12 +16,19 @@ class Product(models.Model):
         return self.product
 
 
+class Place(models.Model):
+    place = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.place
+
+
 class Order(models.Model):
     user = models.ForeignKey(User)
     product = models.ForeignKey(Product)
-    consume_place = models.CharField(max_length=30)
+    consume_place = models.ForeignKey(Place)
     option = models.CharField(max_length=30)
     status = models.ForeignKey(OrderStatus)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
