@@ -1,5 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db.models import signals
 
 
 class OrderStatus(models.Model):
@@ -32,3 +37,14 @@ class Order(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+@receiver(pre_save, sender=Order, dispatch_uid='status')
+def active(sender, instance, **kwargs):
+    if instance is None:
+        return;
+    subject = 'Status Changed'
+    message = 'dear %s one of your orders status may be change please refresh the home page' % instance.user.username
+    from_email = settings.EMAIL_HOST_USER
+    print(from_email)
+    send_mail(subject, message, from_email, [instance.user.username], fail_silently=False)

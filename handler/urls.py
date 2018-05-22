@@ -1,5 +1,5 @@
 from django.conf.urls import include, url
-from .views import Index, Login, Home, Logout , AddOrder , DeleteOrder
+from .views import Index, Login, Home, Logout, AddOrder, DeleteOrder
 
 urlpatterns = [
     url(r'^$', Index.as_view()),

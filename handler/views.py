@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from django.template import loader
-from .models import Product, Place, Order, OrderStatus;
+from .models import Product, Place, Order, OrderStatus
 
 
 class Index(TemplateView):
@@ -38,13 +38,12 @@ decorators = [login_required]
 @method_decorator(decorators, name='dispatch')
 class Home(TemplateView):
     def get(self, *args, **kwargs):
-        print(self.request.user.username);
         template = loader.get_template('handler/home.html')
         context = {
             'username': self.request.user.username,
             'places': Place.objects.order_by('place'),
             'products': Product.objects.order_by('product'),
-            'orders': Order.objects.order_by('id')
+            'orders': Order.objects.filter(user=self.request.user)
         }
         return HttpResponse(template.render(context, self.request))
 
@@ -69,7 +68,6 @@ class AddOrder(TemplateView):
                                          consume_place=Place.objects.get(place=place), option=option,
                                          status=OrderStatus.objects.get(status="waiting"))
         new_order.save()
-        print(username + product + option + place)
         return redirect('/home/')
 
 
