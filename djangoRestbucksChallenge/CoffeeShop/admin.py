@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Customer
-from OrderManagement.models import Product, CustomizedProduct
+from OrderManagement.models import Product, CustomizedProduct, OrderLine, Order
 
 
 class CustomerAdmin(admin.ModelAdmin):
@@ -19,5 +19,17 @@ class ProductAdmin(admin.ModelAdmin):
     ]
 
 
+class OrderLineAdmin(admin.TabularInline):
+    model = OrderLine
+
+
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order_time', 'status')
+    inlines = [
+        OrderLineAdmin,
+    ]
+
+
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Customer, CustomerAdmin)
+admin.site.register(Order, OrderAdmin)
