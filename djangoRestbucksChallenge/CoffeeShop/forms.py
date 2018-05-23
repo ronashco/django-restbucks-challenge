@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from djangoRestbucksChallenge.CoffeeShop import models
+from CoffeeShop import models
 
 from django.contrib.auth import authenticate
 

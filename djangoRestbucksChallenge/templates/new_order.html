@@ -19,7 +19,7 @@
                                     <input type="radio" name="location"
                                            {% if order.location == "inshop" %}checked{% endif %} required
                                            value="inshop">in coffesehop
-                                </label>
+                                </label> &nbsp;
                                 <label class="radio-inline">
                                     <input type="radio" name="location"
                                            {% if order.location == "takeaway" %}checked{% endif %} required
@@ -27,6 +27,7 @@
                                 </label>
                             {% endblock %}
                         </div>
+                        <hr/>
                         {% for product in products %}
                             <div class="form-group row">
                                 {{ product.name }}
@@ -36,9 +37,13 @@
                                 {% for cp in product.customizedproduct_set.all %}
                                     {% block defaultproduct %}
                                         <label class="radio-inline">
-                                            <input type="radio" {% if cp.id in my_customized_products_id %}checked{% endif %} name="{{ product.pk }}" value="{{ cp.option }}-{{ cp.type }}">
+                                            &nbsp;
+                                            <input type="radio"
+                                                   {% if cp.id in my_customized_products_id %}checked{% endif %}
+                                                   name="{{ product.pk }}" value="{{ cp.option }}-{{ cp.type }}">
+
                                             {% if cp.option != 'None' %}
-                                                {{ cp.type }}
+                                                {{ cp.type }}&nbsp;
                                             {% endif %}
                                         </label>
                                     {% endblock %}

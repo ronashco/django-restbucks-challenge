@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.db.models import Sum
 
 from .models import Product, CustomizedProduct, Order, OrderLine
 
@@ -21,31 +22,45 @@ def panel(request):
 
 
 @login_required
+def menu(request):
+    products = Product.objects.all()
+    return render(request, 'menu.html', {'products': products})
+
+
+def get_products_dict_from_database():
+    products = Product.objects.all()
+    products_dict = {}
+    for p in products:
+        products_dict[p] = dict()
+    custom_products = CustomizedProduct.objects.all()
+    for cp in custom_products:
+        d = products_dict[cp.product]
+        if cp.option in d:
+            d[cp.option].append(cp.type)
+        else:
+            d[cp.option] = list()
+            d[cp.option].append(cp.type)
+    return products_dict
+
+
+@login_required
 def new_order(request):
     if request.method == 'GET':
-        return render(request, 'new_order.html', {'products': get_products_dict_from_database()})
+        products = Product.objects.all()
+        return render(request, 'new_order.html', {'products': products})
     elif request.method == 'POST':  # TODO no option exception
         new_order = Order(customer=request.user, location=request.POST.get('location'))
         new_order.save()
         for piece, type in request.POST.items():
             if not piece == 'csrfmiddlewaretoken' and not piece == 'location':
-                idx = piece.find('-')
-                product = Product.objects.get(pk=int(piece[:idx]))
-                if piece[idx+1:] == 'nooption':
-                    try:
-                        CustomizedProduct.objects.get(product=product)
-                        return render(request, 'new_order.html', {'error_message': 'an error happened. try again.'})
-                    except:
-                        cp = CustomizedProduct(product=product, option='None', type='None')
-                        cp.save()
-                        line = OrderLine(order=new_order, customized_product=cp)
-                        line.save()
-                else:
-                    cp = CustomizedProduct.objects.get(product=product, option=piece[idx + 1:], type=type)
-                    line = OrderLine(order=new_order, customized_product=cp)
-                    line.save()
+                idx = type.find('-')
+                product = Product.objects.get(pk=int(piece))
+                cp = CustomizedProduct.objects.get(product=product, option=type[:idx], type=type[idx+1:])
+                line = OrderLine(order=new_order, customized_product=cp)
+                line.save()
 
-        return HttpResponseRedirect(reverse('panel'))
+        return HttpResponseRedirect(reverse('view_an_order') + '?id=' + str(new_order.pk))
+
 
 
 @login_required
@@ -70,3 +85,38 @@ def view_an_order(request):
     return render(request, 'view_an_order.html', {'order': order, 'price': price, 'products': products,
                                                   'my_customized_products_id' : my_customized_products_id})
 
+
+@login_required
+def cancel_order(request):
+    order = Order.objects.get(pk=request.GET.get('id'))
+    order.delete()
+    orders = Order.objects.filter(customer=request.user)
+    return render(request, 'view_orders.html', {'orders': orders,
+                                                'success_message': 'order canceled successfully'})
+
+
+@login_required
+def change_order(request):
+    if request.method == 'GET':
+        order, price = get_order_details(request.GET.get('id'))
+        products = Product.objects.all()
+        my_customized_products_id = [orderline.customized_product.id for orderline in order.orderline_set.all()]
+        return render(request, 'change_order.html', {'order': order, 'price': price,
+                                                  'products': products, 'my_customized_products_id': my_customized_products_id})
+    elif request.method == 'POST':  # TODO no option exception
+        new_order = Order.objects.get(pk=request.GET.get('id'))
+        new_order.location = request.POST.get('location')
+        new_order.save()
+        for piece, type in request.POST.items():
+            if not piece == 'csrfmiddlewaretoken' and not piece == 'location':
+                idx = type.find('-')
+                product = Product.objects.get(pk=int(piece))
+                cp = CustomizedProduct.objects.get(product=product, option=type[:idx], type=type[idx+1:])
+                try:
+                    line = OrderLine.objects.get(order_id=new_order.pk, customized_product__product=product)
+                    line.customized_product = cp
+                    line.save()
+                except OrderLine.DoesNotExist:
+                    OrderLine.objects.create(order=new_order, customized_product = cp)
+
+        return HttpResponseRedirect(reverse('view_an_order') + '?id=' + str(new_order.pk))
