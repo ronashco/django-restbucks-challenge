@@ -54,7 +54,7 @@ class Order(models.Model):
     status = models.CharField(choices=(('waiting', 'waiting'), ('preparation', 'preparation'), ('ready', 'ready'),
                                        ('delivered', 'delivered')), max_length=20, default='waiting')
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    location = models.CharField(choices=(('coffeeshop', 'inshop'), ('home', 'takeaway')), max_length=10)
+    location = models.CharField(choices=(('coffeeshop', 'coffeeshop'), ('takeaway', 'takeaway')), max_length=10)
     order_time = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
@@ -70,7 +70,7 @@ def send_mail(server, rec, msg):
     mail['Subject'] = 'change notification'
     mail.attach(MIMEText(msg, 'plain'))
     # server.send_message(mail, 'childf2018@gmail.com', rec)
-    server.sendmail(rec, 'childf2018@gmail.com', msg)
+    server.sendmail('childf2018@gmail.com', rec, msg)
     server.quit()
 
 
