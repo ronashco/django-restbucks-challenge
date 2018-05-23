@@ -14,6 +14,7 @@
         <input type="radio" name="location" {% if order.location == "coffeeshop" %}checked{% endif %} disabled
                value="here">in coffeeshop
     </label>
+    &nbsp;&nbsp;
     <label class="radio-inline">
         <input type="radio" name="location" {% if order.location == "takeaway" %}checked{% endif %} disabled
                value="takeaway">take away
@@ -25,7 +26,7 @@
         <input type="radio" {% if cp.id in my_customized_products_id %}checked{% endif %} disabled
                name="{{ product.pk }}" value="{{ cp.type }}">
         {% if cp.option != 'None' %}
-            {{ cp.type }}
+            {{ cp.type }}&nbsp;&nbsp;
         {% endif %}
     </label>
 {% endblock %}

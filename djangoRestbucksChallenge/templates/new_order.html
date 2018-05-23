@@ -19,7 +19,7 @@
                                     <input type="radio" name="location"
                                            {% if order.location == "coffeeshop" %}checked{% endif %} required
                                            value="inshop">in coffesehop
-                                </label> &nbsp;
+                                </label> &nbsp;&nbsp;
                                 <label class="radio-inline">
                                     <input type="radio" name="location"
                                            {% if order.location == "takeaway" %}checked{% endif %} required
@@ -30,7 +30,7 @@
                         <hr/>
                         {% for product in products %}
                             <div class="form-group row">
-                                {{ product.name }}
+                                {{ product.name }}&nbsp;({{ product.price }})
                                 {% if product.customizedproduct_set.first.option != 'None' %}
                                     : {{ product.customizedproduct_set.first.option }}-->&nbsp;
                                 {% endif %}
@@ -43,7 +43,7 @@
                                                    name="{{ product.pk }}" value="{{ cp.option }}-{{ cp.type }}">
 
                                             {% if cp.option != 'None' %}
-                                                {{ cp.type }}&nbsp;
+                                                {{ cp.type }}&nbsp;&nbsp;
                                             {% endif %}
                                         </label>
                                     {% endblock %}
