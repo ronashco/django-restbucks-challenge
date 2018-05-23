@@ -1,0 +1,40 @@
+{% extends "base_registered.html" %}
+
+{% block content %}
+    <div>
+        <h4>Customer's Panel</h4>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-sm-12 col-md-4">
+            <div class="jumbotron">
+                <h4 class="display-5">view menu</h4>
+                <hr class="my-4">
+                <p class="lead">
+                    <a class="btn btn-danger btn-lg" href="menu" role="button">go</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-4">
+            <div class="jumbotron">
+                <h4 class="display-5">submit new order</h4>
+                <hr class="my-4">
+                <p class="lead">
+                    <a class="btn btn-danger btn-lg" href="order" role="button">go</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-4">
+            <div class="jumbotron">
+                <h4 class="display-5">view orders</h4>
+                <hr class="my-4">
+                <p class="lead">
+                    <a class="btn btn-danger btn-lg" href="orders" role="button">go</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

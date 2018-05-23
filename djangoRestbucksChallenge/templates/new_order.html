@@ -1,0 +1,58 @@
+{% extends 'base_registered.html' %}
+
+{% block content %}
+    {% block title %}
+        <h2>Submit a new order</h2>
+    {% endblock %}
+    <div class="row">
+        <div class="col-sm-6 center jumbotron">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {% block order_details %}
+                    {% endblock %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        Consuming location:
+                        <div class="form-group row">
+                            {% block location %}
+                                <label class="radio-inline">
+                                    <input type="radio" name="location"
+                                           {% if order.location == "inshop" %}checked{% endif %} required
+                                           value="inshop">in coffesehop
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="location"
+                                           {% if order.location == "takeaway" %}checked{% endif %} required
+                                           value="takeaway">take away
+                                </label>
+                            {% endblock %}
+                        </div>
+                        {% for product in products %}
+                            <div class="form-group row">
+                                {{ product.name }}
+                                {% if product.customizedproduct_set.first.option != 'None' %}
+                                    : {{ product.customizedproduct_set.first.option }}-->&nbsp;
+                                {% endif %}
+                                {% for cp in product.customizedproduct_set.all %}
+                                    {% block defaultproduct %}
+                                        <label class="radio-inline">
+                                            <input type="radio" {% if cp.id in my_customized_products_id %}checked{% endif %} name="{{ product.pk }}" value="{{ cp.option }}-{{ cp.type }}">
+                                            {% if cp.option != 'None' %}
+                                                {{ cp.type }}
+                                            {% endif %}
+                                        </label>
+                                    {% endblock %}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        {% block button %}
+                            <input type="submit" class="btn btn-success" value="submit order">
+                        {% endblock %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
