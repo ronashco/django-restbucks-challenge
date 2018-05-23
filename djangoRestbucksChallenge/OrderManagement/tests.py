@@ -83,3 +83,10 @@ class Test(TestCase):
         for ol in OrderLine.objects.filter(order=last_order):
             self.assertEqual(ol.customized_product.option, cp.option)
             self.assertEqual(ol.customized_product.type, cp.type)
+
+    def test_cancel_an_order(self):
+        user = self.client.login(username='C1', password='C1')
+        order = Order.objects.filter(customer=user).last()
+        count = Order.objects.count()
+        self.client.get(reverse('cancel_order')+'?id='+str(order.pk))
+        self.assertEqual(count - 1, Order.objects.count())
