@@ -1,0 +1,38 @@
+{% extends 'new_order.html' %}
+
+
+{% block order_details %}
+    <div class="form-group row2">
+        <div>status: {{ order.status }}</div>
+        <div>price sum: {{ price }}</div>
+        <hr>
+    </div>
+{% endblock %}
+
+{% block location %}
+    <label class="radio-inline">
+        <input type="radio" name="location" {% if order.location == "inshop" %}checked{% endif %} disabled
+               value="here">in coffeeshop
+    </label>
+    <label class="radio-inline">
+        <input type="radio" name="location" {% if order.location == "takeaway" %}checked{% endif %} disabled
+               value="takeaway">take away
+    </label>
+{% endblock %}
+
+{% block defaultproduct %}
+    <label class="radio-inline">
+        <input type="radio" {% if cp.id in my_customized_products_id %}checked{% endif %} disabled
+               name="{{ product.pk }}" value="{{ cp.type }}">
+        {% if cp.option != 'None' %}
+            {{ cp.type }}
+        {% endif %}
+    </label>
+{% endblock %}
+
+{% block button %}
+    <a class="btn btn-success" value="change order" {% if order.status == 'waiting' %}
+       href="change_order?id={{ order.pk }}" {% endif %}>change order</a>
+    <a class="btn btn-danger" value="cancel order" {% if order.status == 'waiting' %}
+       href="cancel_order?id={{ order.pk }}" {% endif %}>cancel order</a>
+{% endblock %}
