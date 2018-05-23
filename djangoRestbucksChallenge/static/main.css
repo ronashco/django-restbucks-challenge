@@ -1,0 +1,115 @@
+body {
+  font-family: BJalal;
+  direction: ltr; }
+  body ul.errorlist {
+    color: #990000; }
+  body .center {
+    margin-left: auto;
+    margin-right: auto; }
+  body a {
+    color: black; }
+    body a:hover {
+      color: lightcoral;
+      text-decworation: none; }
+  body .container.text-right {
+    margin-top: 6%;
+    margin-bottom: 6%; }
+    body .container.text-right h4 {
+      color: #666; }
+    body .container.text-right .nav {
+      display: inherit; }
+  body nav.navbar {
+    background-color: #800000; }
+  body nav.navbar-header.navbar a {
+    color: white; }
+
+#navbar-scroller {
+  position: fixed; }
+
+footer {
+  padding: 2%;
+  background-color: #e5e5e5; }
+
+/*body nav .btn:hover {*/
+/*background-color: dimgray;*/
+/*}*/
+body {
+  font-family: BJalal;
+  direction: ltr; }
+  body ul.errorlist {
+    color: #990000; }
+  body .center {
+    margin-left: auto;
+    margin-right: auto; }
+  body a {
+    color: black; }
+    body a:hover {
+      color: lightcoral;
+      text-decworation: none; }
+  body .container.text-right {
+    margin-top: 6%;
+    margin-bottom: 6%; }
+    body .container.text-right h4 {
+      color: #666; }
+    body .container.text-right .nav {
+      display: inherit; }
+  body nav.navbar {
+    background-color: #800000; }
+  body nav.navbar-header.navbar a {
+    color: white; }
+
+#navbar-scroller {
+  position: fixed; }
+
+footer {
+  padding: 2%;
+  background-color: #e5e5e5; }
+
+/*body nav .btn:hover {*/
+/*background-color: dimgray;*/
+/*}*/
+body .nav-pills .nav-link.active {
+  background-color: #f0cdd0;
+  color: black; }
+
+body {
+  font-family: BJalal;
+  direction: ltr; }
+  body ul.errorlist {
+    color: #990000; }
+  body .center {
+    margin-left: auto;
+    margin-right: auto; }
+  body a {
+    color: black; }
+    body a:hover {
+      color: lightcoral;
+      text-decworation: none; }
+  body .container.text-right {
+    margin-top: 6%;
+    margin-bottom: 6%; }
+    body .container.text-right h4 {
+      color: #666; }
+    body .container.text-right .nav {
+      display: inherit; }
+  body nav.navbar {
+    background-color: #800000; }
+  body nav.navbar-header.navbar a {
+    color: white; }
+
+#navbar-scroller {
+  position: fixed; }
+
+footer {
+  padding: 2%;
+  background-color: #e5e5e5; }
+
+/*body nav .btn:hover {*/
+/*background-color: dimgray;*/
+/*}*/
+body .panel-default ul.nav-pills {
+  height: 500px; }
+body .panel-default .nav {
+  display: inherit; }
+
+/*# sourceMappingURL=main.css.map */
