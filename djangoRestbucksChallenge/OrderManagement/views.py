@@ -49,7 +49,6 @@ def new_order(request):
         products = Product.objects.all()
         return render(request, 'new_order.html', {'products': products})
     elif request.method == 'POST':
-        print(request.POST)
         new_order = Order(customer=request.user, location=request.POST.get('location'))
         new_order.save()
         for piece, type in request.POST.items():

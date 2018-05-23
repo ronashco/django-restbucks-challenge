@@ -40,15 +40,15 @@ class Test(TestCase):
 
     def test_new_order(self):
         user = self.client.login(username='C1', password='C1')
-        c = Client()
         P1 = Product.objects.get(pk=1)
         cp = P1.customizedproduct_set.first()
         data = {str(P1.pk): [cp.option + '-' + cp.type], 'location': ['takeaway']}
-        print(Order.objects.filter(customer=user).last().pk)
-        c.post('/customer/order', data)
-        print(Order.objects.filter(customer=user).last().pk)
-        print('*****************')
-        self.assertTrue(True)
+        self.client.post(reverse('order'), data)
+        last_order = Order.objects.filter(customer=user).last()
+        self.assertEqual(last_order.location, 'takeaway')
+        for ol in OrderLine.objects.filter(order=last_order):
+            self.assertEqual(ol.customized_product.option, cp.option)
+            self.assertEqual(ol.customized_product.type, cp.type)
 
     def test_view_orders(self):
         user = self.client.login(username='C1', password='C1')
@@ -71,3 +71,15 @@ class Test(TestCase):
         result = [cp[0] for cp in order.orderline_set.values_list('customized_product_id')]
         self.assertEqual(result, response['my_customized_products_id'])
 
+    def test_change_an_order(self):
+        user = self.client.login(username='C1', password='C1')
+        P1 = Product.objects.first()
+        cp = P1.customizedproduct_set.last()
+        data = {str(P1.pk): [cp.option + '-' + cp.type], 'location': ['coffeeshop']}
+        order = Order.objects.filter(customer=user).last()
+        self.client.post(reverse('change_order')+'?id='+str(order.pk), data)
+        last_order = Order.objects.filter(customer=user).last()
+        self.assertEqual(last_order.location, 'coffeeshop')
+        for ol in OrderLine.objects.filter(order=last_order):
+            self.assertEqual(ol.customized_product.option, cp.option)
+            self.assertEqual(ol.customized_product.type, cp.type)
