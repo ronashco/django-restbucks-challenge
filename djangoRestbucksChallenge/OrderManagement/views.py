@@ -4,6 +4,8 @@ from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
+from .models import Product, CustomizedProduct, Order, OrderLine
+
 
 @login_required
 def signout(request):
@@ -44,3 +46,10 @@ def new_order(request):
                     line.save()
 
         return HttpResponseRedirect(reverse('panel'))
+
+
+@login_required
+def view_orders(request):
+    orders = Order.objects.filter(customer=request.user)
+    return render(request, 'view_orders.html', {'orders': orders})
+
