@@ -1,0 +1,35 @@
+body{
+   font-family: 'B Nazanin';
+}
+
+#bonyad #haminan{
+    font-family: 'B Nazanin';
+    font-weight:bold;
+    font-size: 25px;
+    padding: 8px;
+    margin: 40px;
+}
+
+#mashi{
+    font-family: 'B Nazanin';
+    font-weight:bold;
+    font-size: 20px;
+    padding: 8px;
+    margin: 40px;
+    direction: rtl;
+    text-justify: kashida !important;
+}
+
+#hamian-list{
+    margin-top: 50px;
+}
+
+#hamian-list li{
+    display: inline;
+    margin: 25px;
+}
+
+#hamian-list li img{
+    width: 100px;
+    height: 80px;
+}
