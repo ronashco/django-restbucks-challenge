@@ -1,0 +1,74 @@
+[
+  {
+    "model": "products.Product",
+    "pk": 1,
+    "fields": {
+      "title":"Latte",
+      "price":5,
+      "option":"Milk",
+      "items":["skim", "semi", "whole"],
+      "create_date": "2018-02-12T13:20:30+03:00",
+      "update_date": "2018-02-12T13:20:30+03:00"
+    }
+  },
+  {
+    "model": "products.Product",
+    "pk": 2,
+    "fields": {
+      "title":"Cappuccino",
+      "price":6,
+      "option":"Size",
+      "items":["small", "medium", "large"],
+      "create_date": "2018-02-12T13:20:30+03:00",
+      "update_date": "2018-02-12T13:20:30+03:00"
+    }
+  },
+  {
+    "model": "products.Product",
+    "pk": 3,
+    "fields": {
+      "title":"Espresso",
+      "price":"6",
+      "option":"Shots",
+      "items":["single", "double", "triple"],
+      "create_date": "2018-02-12T13:20:30+03:00",
+      "update_date": "2018-02-12T13:20:30+03:00"
+    }
+  },
+  {
+    "model": "products.Product",
+    "pk": 4,
+    "fields": {
+      "title":"Tea",
+      "price":"2",
+      "option":null,
+      "items":null,
+      "create_date": "2018-02-12T13:20:30+03:00",
+      "update_date": "2018-02-12T13:20:30+03:00"
+    }
+  },
+  {
+    "model": "products.Product",
+    "pk": 5,
+    "fields": {
+      "title":"Hot chocolate",
+      "price":"6",
+      "option":"Size",
+      "items":["small", "medium", "large"],
+      "create_date": "2018-02-12T13:20:30+03:00",
+      "update_date": "2018-02-12T13:20:30+03:00"
+    }
+  },
+  {
+    "model": "products.Product",
+    "pk": 6,
+    "fields": {
+      "title":"Cookie",
+      "price":"6",
+      "option":"Kind",
+      "items":["chocolate", "chip", "ginger"],
+      "create_date": "2018-02-12T13:20:30+03:00",
+      "update_date": "2018-02-12T13:20:30+03:00"
+    }
+  }
+]
