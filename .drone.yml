@@ -1,0 +1,110 @@
+clone:
+  git:
+    image: plugins/git
+    recursive: true
+    submodule_override:
+      common: https://github.com/alirezabe/coffeshop.git
+
+pipeline:
+  notify:
+    image: plugins/slack
+    when:
+      branch: [master, release]
+    webhook: https://hooks.slack.com/services/ABC/ABC/ABC
+    channel: store-ci-cd
+    username: Ario CI/CD
+    template: >
+      {{build.author}} has started building {{repo.name}}/{{build.branch}}: build {{build.number}}... :cyclone:
+
+  restore-cache:
+    image: drillster/drone-volume-cache
+    restore: true
+    mount:
+      - /drone/docker
+    volumes:
+      - /tmp/cache:/cache
+
+  build-master:
+    image: plugins/docker
+    tags: latest
+    username: test
+    secrets: [ docker_password ]
+    repo: docker.coffeshop.ir/coffeshop
+    registry: docker.coffeshop.ir
+    tags: latest
+    storage_path: /drone/docker
+    build_args:
+      - VERSION=master
+    when:
+      branch: master
+
+
+  build-release:
+    image: plugins/docker
+    tags: release
+    username: test
+    secrets: [ docker_password ]
+    repo: docker.coffeshop.ir/coffeshop
+    registry: docker.coffeshop.ir
+    tags: release
+    storage_path: /drone/docker
+    build_args:
+      - VERSION=release
+    when:
+      branch: release
+
+  rebuild-cache:
+    image: drillster/drone-volume-cache
+    rebuild: true
+    mount:
+      - /drone/docker
+    volumes:
+      - /tmp/cache:/cache
+
+  deploy-master:
+    image: appleboy/drone-ssh
+    when:
+      branch: master
+    host: test.ariogames.ir
+    username: test
+    volumes:
+     - /root/drone/rsa.pem:/root/ssh/drone_rsa
+    key_path: /root/ssh/drone_rsa
+    port: 22
+    script:
+      - sudo docker tag docker.coffeshop.ir/product:latest docker.coffeshop.ir/product:latestOld
+      - cd /var/www/ariogames
+      - sudo docker-compose pull product
+      - sudo docker-compose up -d --no-deps
+
+  deploy-release:
+    image: appleboy/drone-ssh
+    when:
+      branch: release
+    host: ariogames.ir
+    username: test
+    volumes:
+     - /root/drone/rsa.pem:/root/ssh/drone_rsa
+    key_path: /root/ssh/drone_rsa
+    port: 4545
+    script:
+      - sudo docker tag docker.coffeshop.ir/product:release docker.coffeshop.ir/product:releaseOld
+      - cd /var/app/
+      - sudo docker-compose pull product
+      - sudo docker-compose up -d --no-deps
+
+
+  notify:
+    image: plugins/slack
+    when:
+      branch: [master, release]
+      status: [success, failure]
+    webhook: https://hooks.slack.com/services/ABC/ABC/ABC
+    channel: store-ci-cd
+    username: Ario CI/CD
+    template: >
+      {{#success build.status}}
+        {{repo.name}}/{{build.branch}}: build {{build.number}} succeeded. :white_check_mark:
+      {{else}}
+        {{repo.name}}/{{build.branch}}: build {{build.number}} failed. :x:
+      {{/success}}
