@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %}ORDER LIST{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../static/customer/css/home.css">
+    <link rel="stylesheet" href="../../static/customer/css/sidebar/sidebar.css">
+</head>
+
+
+<body style="background-color: #3f001f;">
+{% block content %}
+
+    <div id="page-content-wrapper" class="offset8">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="pull-right"
+                         style="background-color: white; margin: 5%; padding: 5%; border-radius: 10px; width: 87%;">
+                        <h3 style="font-family: 'B Nazanin';">Oredrs</h3>
+                        <br>
+
+                        <table class="table table-striped"
+                               style="direction: ltr; font-family: 'B Nazanin'; font-size: 20px; ">
+                            <thead>
+                            <tr>
+                                <th>production</th>
+                                <th>consume location</th>
+                                <th>state</th>
+                                <th>cancle</th>
+                                <th>change</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {% if order_list %}
+                                {% for order in order_list %}
+                                    <tr>
+                                        <td>{{ order.production }}</td>
+                                        <td>{{ order.consume_location }}</td>
+                                        <td>{{ order.state }}</td>
+                                        <td>{% if order.state == 'waiting' %}<a href="/cancle/{{ order.ID_num }}">cancle</a>{% endif %}</td>
+                                        <td>{% if order.state == 'waiting' %}<a href="/change/{{ order.ID_num }}">change</a>{% endif %}</td>
+
+
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <title>New Order</title>
+</head>
+
+
+<body style="background-color: #3f001f;">
+
+    <div id="page-content-wrapper" class="offset8">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div style="background-color: white; margin: 5%; padding: 5%; border-radius: 10px;">
+                        <h3 style="font-family: 'B Nazanin';">please select your order:</h3>
+                        <br>
+
+                        <form action="" method="post" style="direction: rtl">{% csrf_token %}
+
+
+                            <center>
+                                <div class="form-group">
+                                    <select style="width: 500px" dir="ltr" class="form-control" id="production"
+                                            name="production">
+                                        <option value="0">Production...</option>
+                                        <option value="Latte with skim milk">Latte with skim milk</option>
+                                        <option value="Latte with semi milk">Latte with semi milk</option>
+                                        <option value="Latte with whole milk">Latte with whole milk</option>
+                                        <option value="Small Cappuccino">Small Cappuccino</option>
+                                        <option value="Medium Cappuccino">Medium Cappuccino</option>
+                                        <option value="Large Cappuccino">Large Cappuccino</option>
+                                        <option value="Tea">Tea</option>
+                                        <option value="Small Hot chocolate">Small Hot chocolate</option>
+                                        <option value="Medium Hot chocolate">Medium Hot chocolate</option>
+                                        <option value="Large Hot chocolate">Large Hot chocolate</option>
+                                        <option value="chocolate chip Cookie">chocolate chip Cookie</option>
+                                        <option value="ginger chip Cookie">ginger chip Cookie</option>
+                                        
+                                    </select>
+                                </div>
+                            </center>
+
+                            <center>
+                                <div class="form-group">
+                                    <select style="width: 500px" dir="ltr" class="form-control" id="consume_location"
+                                            name="consume_location">
+                                        <option value="0">consume location...</option>
+                                        <option value="take away">take away</option>
+                                        <option value="in shop">in shop</option>
+                                    </select>
+                                </div>
+                            </center>
+
+
+                            <input type="submit" name="submit" tabindex="4"
+                                   class="form-control btn btn-login" value="order" placeholder="order">
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
