@@ -170,3 +170,10 @@ venv.bak/
 *.pot
 *.pyc
 local_settings.py
+
+# sqlite
+*.sqlite
+*.sqlite3
+
+# Others
+*.rdb
