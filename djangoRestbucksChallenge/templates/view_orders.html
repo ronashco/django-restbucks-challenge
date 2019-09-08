@@ -1,0 +1,20 @@
+{% extends 'base_registered.html' %}
+
+{% block content %}
+    <h2>Customer's orders</h2>
+    <div class="row">
+        <div class="col-sm-6 center jumbotron">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <ul>
+                        {% for order in orders %}
+                            <li><a href="{% url "view_an_order" %}?id={{ order.pk }}">order time: {{ order.order_time }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="btn btn-success" href="order">submit a new order</a>
+
+{% endblock %}

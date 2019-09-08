@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="2899585050">
+    <data-source source="LOCAL" name="Sqlite (Xerial) - db.sqlite3" uuid="ef2e2e25-42e8-4f79-aeb9-3ecb5dac1202">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/djangoRestbucksChallenge/db.sqlite3</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="My DB" uuid="0e6602a2-4762-4b6e-8bee-e619d2acb021">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/djangoRestbucksChallenge/db.sqlite3</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="DB" uuid="97533295-27ed-4ce5-afc0-5bd483234369">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/djangoRestbucksChallenge/db.sqlite3</jdbc-url>
+    </data-source>
+  </component>
+</project>

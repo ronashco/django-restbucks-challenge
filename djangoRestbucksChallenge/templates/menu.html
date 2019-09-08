@@ -1,0 +1,20 @@
+{% extends 'base_registered.html' %}
+
+{% block content %}
+    <h2>Menu</h2>
+    <div class="row">
+        <div class="col-sm-6 center jumbotron">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <ul>
+                        {% for field in products %}
+                            <li>{{ field.name }} --> {{ field.price }}&nbsp;tomans</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="btn btn-success" href="order">submit a new order</a>
+
+{% endblock %}

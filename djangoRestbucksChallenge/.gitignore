@@ -1,0 +1,5 @@
+# Created by .ignore support plugin (hsz.mobi)
+/db.sqlite3
+.idea/**/workspace.xml
+.idea/**/profiles_settings.xml
+.idea/**/Project_Default.xml
