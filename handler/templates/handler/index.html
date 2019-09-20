@@ -1,0 +1,34 @@
+{%load static from staticfiles %}
+
+<html>
+
+<head>
+    <title> صفحه اصلی </title>
+    <link rel="stylesheet" type="text/css" href="{% static 'general.css'%}">
+</head>
+<body>
+<form action="login" method="post">
+
+    {% csrf_token %}
+    <div id="login-container">
+        <div>
+            email:
+        </div>
+        <input id="email-field" name="email" placeholder="enter email">
+
+        </input>
+        <br/>
+        <div>
+            password:
+        </div>
+        <input id="password-field" type="password" name="password" placeholder="enter password">
+
+        </input>
+        <input type="submit" id="submit-button">
+
+        </input>
+    </div>
+</form>
+</body>
+
+</html>

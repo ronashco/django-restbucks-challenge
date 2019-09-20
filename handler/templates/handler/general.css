@@ -1,0 +1,89 @@
+#login-container {
+    position: relative;
+    left: 500px;
+    top: 200px;
+}
+
+#email-field {
+    display: block;
+}
+
+#password-field {
+    display: block;
+}
+
+#submit-button {
+    background-color: rgba(76, 76, 241, 0.657);
+    color: white;
+    text-align: center;
+    border-radius: 2px;
+    height: 30px;
+    width: 100px;
+    margin-top: 10px;
+    margin-left: 75px;
+}
+
+#submit-button:hover {
+    cursor: pointer;
+    background-color: rgba(76, 76, 241, 0.657);
+    color: white;
+    text-align: center;
+    border-radius: 2px;
+    border: thick;
+    margin-top: 10px;
+    margin-left: 75px;
+}
+
+#error-message {
+    margin-top: 10px;
+    color: red;
+    font-size: 0.7em;
+}
+
+#home-top-panel {
+    border-bottom: black;
+    width: 100%;
+    height: 20%;
+    display: flex;
+    justify-content: space-around;
+}
+
+#home-bottom-panel {
+    height: 80%;
+    display: flex;
+    justify-content: center;
+}
+
+#logout-button {
+    background-color: rgba(76, 76, 241, 0.657);
+    color: white;
+    height: 30px;
+    width: 130px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.home-bottom-box {
+    border-style: dotted;
+    border-color: black;
+    height: 100%;
+    width: 50%;
+}
+
+#order-table {
+    border: 1px solid black;
+}
+
+td {
+    text-align: center;
+}
+
+#cancel-order {
+    background-color: red;
+    color: white;
+    cursor: pointer;
+}
+
+#return-home-button{
+    cursor: pointer;
+}

@@ -1,0 +1,102 @@
+{%load static from staticfiles %}
+
+<html>
+
+<head>
+    <title> خانه </title>
+    <link rel="stylesheet" type="text/css" href="{% static 'general.css'%}">
+</head>
+
+<body>
+<div id="home-top-panel">
+
+    <a href="./logout">
+        <button id="logout-button">
+            خروج
+        </button>
+    </a>
+    <h2>
+        به نام خدا، خوش آمدید
+    </h2>
+    <h4>
+        {{username}} اسم شما
+    </h4>
+</div>
+<div id="home-bottom-panel">
+
+    <div class="home-bottom-box">
+        <p style="float: right;">از اینجا سفارش های خود را ببینید</p>
+        <br/>
+        <br/>
+
+
+        <table width="100%" id="order-table" rules="all">
+            <th>order id</th>
+            <th>product</th>
+            <th>options</th>
+            <th>consume place</th>
+
+            <th>status</th>
+            <th>
+                cancel?
+            </th>
+            {% for order in orders %}
+            <tr>
+                <td>
+                    {{ order.id }}
+                </td>
+                <td>
+                    {{ order.product }}
+                </td>
+                <td>
+                    {{ order.option }}
+                </td>
+                <td>
+                    {{ order.consume_place }}
+                </td>
+                <td>
+                    {{ order.status }}
+                </td>
+                <td>
+                    <form action="deleteorder/{{order.id}}" method="get">
+                        <button id="cancel-order">
+                            cancel
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    </div>
+    <div class="home-bottom-box">
+        <p style="float: right;">از اینجا سفارش دهید</p>
+        <br/>
+        <form id="add-order-bar" action="addorder" method="post" style="margin-top:70px; margin-left:10px;">
+            {% csrf_token %}
+            <select id="product-select" name="product-choice">
+                {% for product in products %}
+                <option value="{{product}}">
+                    {{ product }}
+                </option>
+                {% endfor %}
+            </select>
+            <select id="place-container" name="place-choice">
+                {% for place in places %}
+                <option value="{{place}}">
+                    {{ place }}
+                </option>
+                {% endfor %}
+            </select>
+            <input id="option-field" name="option" placeholder="enter your option">
+
+            </input>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+</div>
+</body>
+
+</html>
