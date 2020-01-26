@@ -32,6 +32,6 @@
         </UrlAndUserName>
       </list>
     </option>
-    <option name="cloneParentDir" value="$USER_HOME$/PycharmProjects/streamingProject" />
+    <option name="cloneParentDir" value="$USER_HOME$/PycharmProjects/streamingProject_" />
   </component>
 </application>
