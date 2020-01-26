@@ -22,8 +22,16 @@
           <option name="url" value="https://github.com/craft-ai/benchmarks.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/sinaak/streamingProject.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/APLABWEB/APLAB.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
-    <option name="cloneParentDir" value="$USER_HOME$/CRAFT AI/VisitorReturn-Check" />
+    <option name="cloneParentDir" value="$USER_HOME$/PycharmProjects/streamingProject" />
   </component>
 </application>
