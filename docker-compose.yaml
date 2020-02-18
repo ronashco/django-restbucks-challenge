@@ -1,0 +1,76 @@
+version: '3.4'
+
+services:
+
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
+    image: rabbitmq:latest
+    networks:
+      - main
+    ports:
+      - "5672:5672"
+    restart: on-failure
+
+  postgres:
+    container_name: postgres
+    hostname: postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    networks:
+      - main
+    ports:
+      - "5432:5432"
+    restart: on-failure
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "wait && python manage.py collectstatic --no-input && python manage.py migrate && python manage.py createsu && gunicorn restbucks.wsgi -b 0.0.0.0:8000"
+    container_name: app
+    depends_on:
+      - postgres
+      - rabbitmq
+    #    expose:
+    #      - "8000"
+    ports:
+      - "8000:8000"
+    hostname: app
+    networks:
+      - main
+    restart: always
+    volumes:
+      - .:/usr/src/app
+      - .:/usr/src/app/static
+    environment:
+      WAIT_HOSTS: postgres:5432
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "wait && celery worker -A restbucks.celery_app -l info"
+    depends_on:
+      - app
+      - postgres
+      - rabbitmq
+    restart: always
+    hostname: celery_worker
+    networks:
+      - main
+    volumes:
+      - .:/usr/src/app
+    environment:
+      WAIT_HOSTS: rabbitmq:5672, app:8000, postgres:5432
+
+networks:
+  main:
+
+volumes:
+  postgresql-data:

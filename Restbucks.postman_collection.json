@@ -1,0 +1,286 @@
+{
+	"info": {
+		"_postman_id": "ca0340b4-16fb-4d90-a0ed-de3d70788db5",
+		"name": "Restbucks",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Edit Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNTgyMDY0ODM3LCJqdGkiOiJiMTgwZGNjZGJjYmU0M2JmYTRjNzk0ZjA4ODM4NDI3NyIsInVzZXJfaWQiOjJ9.XK_iHDdHLfnO5uzhXaJycbV7TElDu3s_4KwwPm5Tj8M",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"order_id\":12,\n    \"order\": [\n        {\n            \"product\": \"Latte\",\n            \"count\":1,\n            \"options\": [\n                {\n                    \"name\": \"Milk\",\n                    \"value\": \"Whole\"\n                },\n                {\n                    \"name\": \"Consume location\",\n                    \"value\": \"take away\"\n                }\n            ]\n        },\n        {\n            \"product\": \"tea\",\n            \"count\":1,\n            \"options\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/restbucks/order/edit",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"restbucks",
+						"order",
+						"edit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNTgyMDY0ODM3LCJqdGkiOiJiMTgwZGNjZGJjYmU0M2JmYTRjNzk0ZjA4ODM4NDI3NyIsInVzZXJfaWQiOjJ9.XK_iHDdHLfnO5uzhXaJycbV7TElDu3s_4KwwPm5Tj8M",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"order_id\":14\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/restbucks/order/cancel",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"restbucks",
+						"order",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Order List",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNTgyMDY0ODM3LCJqdGkiOiJiMTgwZGNjZGJjYmU0M2JmYTRjNzk0ZjA4ODM4NDI3NyIsInVzZXJfaWQiOjJ9.XK_iHDdHLfnO5uzhXaJycbV7TElDu3s_4KwwPm5Tj8M",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"order\": [\n        {\n            \"product\": \"Latte\",\n            \"count\":1,\n            \"options\": [\n                {\n                    \"name\": \"Milk\",\n                    \"value\": \"Semi\"\n                },\n                {\n                    \"name\": \"Consume location\",\n                    \"value\": \"take away\"\n                }\n            ]\n        },\n        {\n            \"product\": \"tea\",\n            \"count\":1,\n            \"options\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/restbucks/order/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"restbucks",
+						"order",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNTgyMDY0ODM3LCJqdGkiOiJiMTgwZGNjZGJjYmU0M2JmYTRjNzk0ZjA4ODM4NDI3NyIsInVzZXJfaWQiOjJ9.XK_iHDdHLfnO5uzhXaJycbV7TElDu3s_4KwwPm5Tj8M",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"order\": [\n        {\n            \"product\": \"Latte\",\n            \"count\":1,\n            \"options\": [\n                {\n                    \"name\": \"Milk\",\n                    \"value\": \"Semi\"\n                },\n                {\n                    \"name\": \"Consume location\",\n                    \"value\": \"take away\"\n                }\n            ]\n        },\n        {\n            \"product\": \"tea\",\n            \"count\":1,\n            \"options\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/restbucks/order",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"restbucks",
+						"order"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View Menu",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNTgyMDY0ODM3LCJqdGkiOiJiMTgwZGNjZGJjYmU0M2JmYTRjNzk0ZjA4ODM4NDI3NyIsInVzZXJfaWQiOjJ9.XK_iHDdHLfnO5uzhXaJycbV7TElDu3s_4KwwPm5Tj8M",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"azzerilla\", \"password\": \"@12345678\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/restbucks/menu",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"restbucks",
+						"menu"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Authenticate",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"azzerilla\", \"password\": \"@12345678\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/token/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"token",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
