@@ -1,0 +1,22 @@
+# IDE
+/.idea/
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Custom
+*.rar
+*.zip
+.idea/*.*
+*.pyc
+__pycache__
+*.old
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
