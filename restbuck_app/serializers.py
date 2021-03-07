@@ -3,6 +3,12 @@ from rest_framework.fields import SerializerMethodField
 from restbuck_app.models import *
 
 
+class FeatureValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeaturesValue
+        fields = ('id', 'title')
+
+
 class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
@@ -10,7 +16,7 @@ class FeatureSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    feature_list = FeatureSerializer(read_only=True, many=True)
+    feature_list = FeatureWithValuesSerializer(read_only=True, many=True)
 
     class Meta:
         model = Product
