@@ -1,0 +1,180 @@
+[{
+		"model" : "restbuck_app.feature",
+		"pk" : 1,
+		"fields" : {
+			"title" : "Milk"
+		}
+	}, {
+		"model" : "restbuck_app.feature",
+		"pk" : 2,
+		"fields" : {
+			"title" : "Size"
+		}
+	}, {
+		"model" : "restbuck_app.feature",
+		"pk" : 3,
+		"fields" : {
+			"title" : "Shots"
+		}
+	}, {
+		"model" : "restbuck_app.feature",
+		"pk" : 4,
+		"fields" : {
+			"title" : "Kind"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 1,
+		"fields" : {
+			"feature" : 1,
+			"title" : "skim"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 2,
+		"fields" : {
+			"feature" : 1,
+			"title" : "semi"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 3,
+		"fields" : {
+			"feature" : 1,
+			"title" : "whole"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 4,
+		"fields" : {
+			"feature" : 2,
+			"title" : "small"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 5,
+		"fields" : {
+			"feature" : 2,
+			"title" : "medium"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 6,
+		"fields" : {
+			"feature" : 2,
+			"title" : "large"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 7,
+		"fields" : {
+			"feature" : 3,
+			"title" : "single"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 8,
+		"fields" : {
+			"feature" : 3,
+			"title" : "double"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 9,
+		"fields" : {
+			"feature" : 3,
+			"title" : "triple"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 10,
+		"fields" : {
+			"feature" : 4,
+			"title" : "chocolate chip"
+		}
+	}, {
+		"model" : "restbuck_app.featuresvalue",
+		"pk" : 11,
+		"fields" : {
+			"feature" : 4,
+			"title" : "ginger"
+		}
+	}, {
+		"model" : "restbuck_app.product",
+		"pk" : 1,
+		"fields" : {
+			"title" : "Latte",
+			"cost" : 10
+		}
+	}, {
+		"model" : "restbuck_app.product",
+		"pk" : 2,
+		"fields" : {
+			"title" : "Cappuccino",
+			"cost" : 11
+		}
+	}, {
+		"model" : "restbuck_app.product",
+		"pk" : 3,
+		"fields" : {
+			"title" : "Espresso",
+			"cost" : 8
+		}
+	}, {
+		"model" : "restbuck_app.product",
+		"pk" : 4,
+		"fields" : {
+			"title" : "Tea",
+			"cost" : 7
+		}
+	}, {
+		"model" : "restbuck_app.product",
+		"pk" : 5,
+		"fields" : {
+			"title" : "Hot chocolate",
+			"cost" : 12
+		}
+	}, {
+		"model" : "restbuck_app.product",
+		"pk" : 6,
+		"fields" : {
+			"title" : "Cookie",
+			"cost" : 4
+		}
+	}, {
+		"model" : "restbuck_app.productfeature",
+		"pk" : 1,
+		"fields" : {
+			"product" : 1,
+			"feature" : 1
+		}
+	}, {
+		"model" : "restbuck_app.productfeature",
+		"pk" : 2,
+		"fields" : {
+			"product" : 2,
+			"feature" : 2
+		}
+	}, {
+		"model" : "restbuck_app.productfeature",
+		"pk" : 3,
+		"fields" : {
+			"product" : 3,
+			"feature" : 3
+		}
+	}, {
+		"model" : "restbuck_app.productfeature",
+		"pk" : 4,
+		"fields" : {
+			"product" : 5,
+			"feature" : 2
+		}
+	}, {
+		"model" : "restbuck_app.productfeature",
+		"pk" : 5,
+		"fields" : {
+			"product" : 6,
+			"feature" : 4
+		}
+	}
+]
