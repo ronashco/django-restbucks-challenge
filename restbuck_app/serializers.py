@@ -32,10 +32,16 @@ class FeatureWithValuesSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     feature_list = FeatureWithValuesSerializer(read_only=True, many=True)
+    consume_location = serializers.SerializerMethodField()
+    # TODO: check standard serialize for choices
 
     class Meta:
         model = Product
         fields = ('id',
                   'title',
                   'cost',
+                  'consume_location',
                   'feature_list')
+
+    def get_consume_location(self, obj):
+        return ConsumeLocation.types
