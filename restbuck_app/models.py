@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class ConsumeLocation(models.Model):
@@ -87,6 +88,7 @@ class ProductOrder(models.Model):
 
 
 class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     status = models.SmallIntegerField(choices=OrderStatus.types, default=OrderStatus.waiting)
     product_list = models.ManyToManyField(Product, through=ProductOrder, related_name='products')
 
