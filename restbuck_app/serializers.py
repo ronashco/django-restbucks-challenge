@@ -33,7 +33,7 @@ class FeatureWithValuesSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     feature_list = FeatureWithValuesSerializer(read_only=True, many=True)
     consume_location = serializers.SerializerMethodField()
-    # TODO: check standard serialize for choices
+    # TODO: check standard serializer for choices
 
     class Meta:
         model = Product
