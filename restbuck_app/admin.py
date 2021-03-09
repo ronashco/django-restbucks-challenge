@@ -41,11 +41,6 @@ class ProductOrderInline(admin.TabularInline):
     extra = 1
 
 
-class ProductOrderFeatureValueAdmin(admin.TabularInline):
-    model = ProductOrderFeatureValue
-    extra = 1
-
-
 class OrderAdmin(admin.ModelAdmin):
     list_display = [f.name for f in Order._meta.fields]
     inlines = (ProductOrderInline,)
@@ -56,14 +51,8 @@ admin.site.register(Order, OrderAdmin)
 
 class ProductOrderAdmin(admin.ModelAdmin):
     list_display = [f.name for f in ProductOrder._meta.fields]
-    inlines = (ProductOrderFeatureValueAdmin,)
 
 
 admin.site.register(ProductOrder, ProductOrderAdmin)
 
 
-class ProductOrderFeatureValueAdmin(admin.ModelAdmin):
-    list_display = [f.name for f in ProductOrderFeatureValue._meta.fields]
-
-
-admin.site.register(ProductOrderFeatureValue, ProductOrderFeatureValueAdmin)
