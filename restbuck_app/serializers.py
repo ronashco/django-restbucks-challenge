@@ -9,15 +9,6 @@ class FeatureValueSerializer(serializers.ModelSerializer):
         fields = ('id', 'title')
 
 
-class FeatureValueWithLabelSerializer(serializers.ModelSerializer):
-    feature_title = CharField(source='feature.title', read_only=True)
-    value = CharField(source='title', read_only=True)
-
-    class Meta:
-        model = FeaturesValue
-        fields = ('id', 'value', 'feature_title')
-
-
 class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
