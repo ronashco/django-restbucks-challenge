@@ -58,10 +58,11 @@ class ProductOrderSerializer(serializers.HyperlinkedModelSerializer):
 
     product = serializers.ReadOnlyField(source='product.title')
     consume_location = serializers.CharField(source='get_consume_location_display')
+    feature_value_list = FeatureValueWithLabelSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProductOrder
-        fields = ('product', 'count', 'consume_location')
+        fields = ('product', 'count', 'consume_location', 'feature_value_list')
 
 
 class OrderSerializer(serializers.ModelSerializer):
