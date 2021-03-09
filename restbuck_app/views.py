@@ -21,19 +21,26 @@ def get_auth_user(request):
 
 
 class OrderView(APIView):
-    def get_object(self, pk):
-        try:
-            return Order.objects.get(pk=pk)
-        except Order.DoesNotExist:
-            raise Http404
+    def get_object(self, pk, user):
+        if Order.objects.filter(pk=pk).exists():
+            order = Order.objects.get(pk=pk)
+            response_status = status.HTTP_200_OK
+            if order.user != user:
+                response_status = status.HTTP_403_FORBIDDEN
+            return order, response_status
+        else:
+            return None, status.HTTP_404_NOT_FOUND
 
     def get(self, request, pk=0):
         user = get_auth_user(request)
         if pk != 0:
-            order = self.get_object(pk)
-            if order.user != user:
-                return Response({'error': True, 'message': 'not your order'}, status=status.HTTP_403_FORBIDDEN)
-            data = OrderSerializer(order).data
+            order, response_status = self.get_object(pk, user)
+            if response_status == status.HTTP_404_NOT_FOUND:
+                return Response({'error': True, 'message': 'requested order dose not exist'}, response_status)
+            elif response_status == status.HTTP_403_FORBIDDEN:
+                return Response({'error': True, 'message': 'Not your order'}, response_status)
+            elif response_status == status.HTTP_200_OK:
+                data = OrderSerializer(order).data
         else:
             orders = Order.objects.filter(user=user)
             data = []
@@ -41,3 +48,6 @@ class OrderView(APIView):
                 data.append(OrderSerializer(order).data)
         return Response({'data': data,
                          'error': False})
+
+    def delete(self, requset, pk=0):
+        pass
