@@ -45,3 +45,22 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_consume_location(self, obj):
         return ConsumeLocation.types
+
+
+class ProductOrderSerializer(serializers.HyperlinkedModelSerializer):
+
+    product = serializers.ReadOnlyField(source='product.title')
+    consume_location = serializers.CharField(source='get_consume_location_display')
+
+    class Meta:
+        model = ProductOrder
+        fields = ('product', 'count', 'consume_location')
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    product_list = ProductOrderSerializer(source='productorder_set', read_only=True, many=True)
+    status = serializers.CharField(source='get_status_display')
+
+    class Meta:
+        model = Order
+        fields = ('id', 'status', 'product_list')
