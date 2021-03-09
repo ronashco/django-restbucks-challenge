@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.fields import SerializerMethodField
+from rest_framework.fields import SerializerMethodField, CharField, ReadOnlyField
 from restbuck_app.models import *
 
 
@@ -10,8 +10,8 @@ class FeatureValueSerializer(serializers.ModelSerializer):
 
 
 class FeatureValueWithLabelSerializer(serializers.ModelSerializer):
-    feature_title = serializers.CharField(source='feature.title', read_only=True)
-    value = serializers.CharField(source='title', read_only=True)
+    feature_title = CharField(source='feature.title', read_only=True)
+    value = CharField(source='title', read_only=True)
 
     class Meta:
         model = FeaturesValue
@@ -39,7 +39,7 @@ class FeatureWithValuesSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     feature_list = FeatureWithValuesSerializer(read_only=True, many=True)
-    consume_location = serializers.SerializerMethodField()
+    consume_location = SerializerMethodField()
     # TODO: check standard serializer for choices
 
     class Meta:
@@ -67,7 +67,7 @@ class ProductOrderSerializer(serializers.HyperlinkedModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     product_list = ProductOrderSerializer(source='productorder_set', read_only=True, many=True)
-    status = serializers.CharField(source='get_status_display')
+    status = CharField(source='get_status_display')
 
     class Meta:
         model = Order
