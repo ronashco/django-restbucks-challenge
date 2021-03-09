@@ -65,6 +65,22 @@ class ProductOrderSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('product', 'count', 'consume_location', 'feature_value_list')
 
 
+class ProductOrderFlatSerializer(serializers.HyperlinkedModelSerializer):
+
+    product = ReadOnlyField(source='product.title')
+    consume_location_display = ReadOnlyField(source='get_consume_location_display')
+    # feature_value_list = FeatureValueWithLabelSerializer(many=True, read_only=True)
+    feature_value = SerializerMethodField(source='feature_value_list.title', read_only=True)
+    feature_title = SerializerMethodField(source='feature_value_list.feature.title', read_only=True)
+
+    class Meta:
+        model = ProductOrder
+        fields = ('product', 'count', 'consume_location_display', 'feature_value', 'feature_title')
+    def get_feature_title(self, obj):
+        pofv = ProductOrderFeatureValue.objects.filter(product_order=obj).first()
+        pofv.feature_value
+
+
 class OrderSerializer(serializers.ModelSerializer):
     product_list = ProductOrderSerializer(source='productorder_set', read_only=True, many=True)
     status = CharField(source='get_status_display')
