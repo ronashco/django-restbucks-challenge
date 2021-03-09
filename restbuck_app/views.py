@@ -44,7 +44,7 @@ class OrderView(APIView):
         elif pk < 0:
             return Response({'error': True, 'message': 'Not valid order id'}, status.HTTP_400_BAD_REQUEST)
         else:
-            orders = Order.objects.filter(user=user)
+            orders = Order.objects.filter(user=user).exclude(status=OrderStatus.canceled)
             data = []
             for order in orders:
                 data.append(OrderSerializer(order).data)
