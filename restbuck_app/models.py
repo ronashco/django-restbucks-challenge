@@ -73,7 +73,7 @@ class ProductOrderFeatureValue(models.Model):
     feature_List = models.ForeignKey(FeaturesValue, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.id
+        return str(self.id) + self.product_order.__str__() + self.feature_List.__str__()
 
 
 class ProductOrder(models.Model):
@@ -93,5 +93,5 @@ class Order(models.Model):
     product_list = models.ManyToManyField(Product, through=ProductOrder, related_name='products')
 
     def __str__(self):
-        return 'id:'+self.id.__str__()+'-'+', '.join([x.title for x in self.product_list.all()])
+        return 'id:'+self.id.__str__() + '-' + self.user.__str__() + '-' + ', '.join([x.title for x in self.product_list.all()])
 
