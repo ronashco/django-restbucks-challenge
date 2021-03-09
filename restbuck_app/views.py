@@ -22,7 +22,7 @@ def get_auth_user(request):
 
 class OrderView(APIView):
     def get_object(self, pk, user):
-        if Order.objects.filter(pk=pk).exists():
+        if Order.objects.filter(pk=pk).exclude(status=OrderStatus.canceled).exists():
             order = Order.objects.get(pk=pk)
             response_status = status.HTTP_200_OK
             if order.user != user:
