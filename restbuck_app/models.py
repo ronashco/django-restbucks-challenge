@@ -70,7 +70,7 @@ class ProductFeature(models.Model):
 
 class ProductOrderFeatureValue(models.Model):
     product_order = models.ForeignKey('ProductOrder', on_delete=models.CASCADE)
-    feature_List = models.ForeignKey(FeaturesValue, on_delete=models.CASCADE)
+    feature_value = models.ForeignKey(FeaturesValue, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.id) + self.product_order.__str__() + self.feature_List.__str__()
