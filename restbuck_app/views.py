@@ -33,7 +33,7 @@ class OrderView(APIView):
 
     def get(self, request, pk=0):
         user = get_auth_user(request)
-        if pk != 0:
+        if pk > 0:
             order, response_status = self.get_object(pk, user)
             if response_status == status.HTTP_404_NOT_FOUND:
                 return Response({'error': True, 'message': 'requested order dose not exist'}, response_status)
@@ -41,6 +41,8 @@ class OrderView(APIView):
                 return Response({'error': True, 'message': 'Not your order'}, response_status)
             elif response_status == status.HTTP_200_OK:
                 data = OrderSerializer(order).data
+        elif pk < 0:
+            return Response({'error': True, 'message': 'Not valid order id'}, status.HTTP_400_BAD_REQUEST)
         else:
             orders = Order.objects.filter(user=user)
             data = []
