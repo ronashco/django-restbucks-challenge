@@ -6,4 +6,5 @@ from restbuck_app import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('menu/', views.Menu.as_view()),
+    path('myorders/', views.MyOrders.as_view()),
     ]
