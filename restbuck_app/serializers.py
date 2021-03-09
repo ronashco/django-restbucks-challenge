@@ -9,6 +9,15 @@ class FeatureValueSerializer(serializers.ModelSerializer):
         fields = ('id', 'title')
 
 
+class FeatureValueWithLabelSerializer(serializers.ModelSerializer):
+    feature_title = serializers.CharField(source='feature.title', read_only=True)
+    value = serializers.CharField(source='title', read_only=True)
+
+    class Meta:
+        model = FeaturesValue
+        fields = ('id', 'value', 'feature_title')
+
+
 class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
@@ -17,8 +26,6 @@ class FeatureSerializer(serializers.ModelSerializer):
 
 class FeatureWithValuesSerializer(serializers.ModelSerializer):
     value_list = SerializerMethodField(read_only=True)
-    # value_list = FeatureValueSerializer(many=True, read_only=True)
-    # value_list = FeatureSerializer(many=True, read_only=True)
 
     class Meta:
         model = Feature
