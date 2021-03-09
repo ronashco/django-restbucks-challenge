@@ -45,35 +45,19 @@ class ProductSerializer(serializers.ModelSerializer):
         return ConsumeLocation.types
 
 
-class ProductOrderSerializer(serializers.HyperlinkedModelSerializer):
-
-    product = serializers.ReadOnlyField(source='product.title')
-    consume_location = serializers.CharField(source='get_consume_location_display')
-    feature_value_list = FeatureValueWithLabelSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = ProductOrder
-        fields = ('product', 'count', 'consume_location', 'feature_value_list')
-
-
-class ProductOrderFlatSerializer(serializers.HyperlinkedModelSerializer):
-
-    product = ReadOnlyField(source='product.title')
-    consume_location_display = ReadOnlyField(source='get_consume_location_display')
-    # feature_value_list = FeatureValueWithLabelSerializer(many=True, read_only=True)
-    feature_value = SerializerMethodField(source='feature_value_list.title', read_only=True)
-    feature_title = SerializerMethodField(source='feature_value_list.feature.title', read_only=True)
+class ProductOrderFlatSerializer(serializers.ModelSerializer):
+    product_title = ReadOnlyField(source='product.title', read_only=True)
+    consume_location_display = CharField(source='get_consume_location_display', read_only=True)
+    feature_value_title = CharField(source='feature_value.title', read_only=True)
 
     class Meta:
         model = ProductOrder
-        fields = ('product', 'count', 'consume_location_display', 'feature_value', 'feature_title')
-    def get_feature_title(self, obj):
-        pofv = ProductOrderFeatureValue.objects.filter(product_order=obj).first()
-        pofv.feature_value
+        fields = ('product', 'product_title', 'count', 'consume_location', 'consume_location_display', 'feature_value',
+                  'feature_value_title')
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    product_list = ProductOrderSerializer(source='productorder_set', read_only=True, many=True)
+    product_list = ProductOrderFlatSerializer(source='productorder_set', read_only=True, many=True)
     status = CharField(source='get_status_display')
 
     class Meta:
