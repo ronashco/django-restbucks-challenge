@@ -16,11 +16,13 @@ class OrderStatus(models.Model):
     preparation = 1
     ready = 2
     delivered = 3
+    canceled = 4
     types = (
         (waiting, 'waiting'),
         (preparation, 'preparation'),
         (ready, 'ready'),
         (delivered, 'delivered'),
+        (canceled, 'canceled'),
     )
 
 
