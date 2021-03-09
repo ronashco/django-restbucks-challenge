@@ -51,5 +51,20 @@ class OrderView(APIView):
         return Response({'data': data,
                          'error': False})
 
-    def delete(self, requset, pk=0):
-        pass
+    def delete(self, request, pk=0):
+        user = get_auth_user(request)
+        if pk > 0:
+            order, response_status = self.get_object(pk, user)
+            if response_status == status.HTTP_404_NOT_FOUND:
+                return Response({'error': True, 'message': 'requested order dose not exist'}, response_status)
+            elif response_status == status.HTTP_403_FORBIDDEN:
+                return Response({'error': True, 'message': 'Not your order'}, response_status)
+            elif response_status == status.HTTP_200_OK:
+                if order.status == OrderStatus.waiting:
+                    order.status = OrderStatus.canceled
+                    order.save()
+                    return Response(status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': True, 'message': 'Not valid order status'}, status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': True, 'message': 'Not valid order id'}, status.HTTP_400_BAD_REQUEST)
