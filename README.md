@@ -1,17 +1,17 @@
-# Django Restbucks Challenage
+# Django Restfun Challenge
 
 An RESTful django development challenge for managing a small coffee shop
 
 ## Introduction 
 In this challenge, you are going to develop a small django web application which manages 
-restbucks coffee shop orders via REST APIs.
+restfun coffee shop orders via REST APIs.
 
-In restbucks, the manager can define variety of products via admin panel. Customers 
+In restfun, the manager can define variety of products via admin panel. Customers 
 are able to order and customize their coffee with several options. Order can have a 
 status: waiting, preparation, ready, delivered. Manager can chagne orders status. 
 After each status change on order, you should notify the customer via email.
 
-Here is sample catalog of products offered by restbucks:
+Here is sample catalog of products offered by restfun:
 
 Production > Customization option
 
